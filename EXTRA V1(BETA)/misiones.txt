@@ -1,0 +1,7 @@
+# Lista de misiones .miz para traducir
+# Formato: nombre_archivo.miz (uno por línea)
+
+# black_resolve_79_F5_caucaso (usamos |<fichero target>)
+#F5-E-C1.miz|dictionary
+#F5-E-C2.miz|dictionary
+
