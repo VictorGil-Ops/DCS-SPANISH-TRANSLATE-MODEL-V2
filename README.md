@@ -65,7 +65,7 @@ python orquestador.py --config "config-F5.txt"
 
 Lee lo que tengamos en `config-F5.txt`, importante dejarlo bien configurado y adaptado a tu equipo.
 
-1 - `ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns` (CAMBIAR) indica donde tienes las misiones de DCS y las autodetecta.
+1 - `ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns` (CAMBIAR) indica donde tienes las campañas/misiones en DCS y las autodetecta.
 
 2 - `FILE_TARGET: l10n/DEFAULT/dictionary` le indicas donde estan el fichero a traducir dentro del .miz.
 
