@@ -10,6 +10,7 @@ LM_INSTRUCTIONS: |-
   2.  **CONSERVACIÓN (OBLIGATORIO):**
       - **Mantén SIEMPRE y EXACTAMENTE, SIN TRADUCIR NI UN CARÁCTER,** los siguientes elementos en su forma original:
           - **TODAS las etiquetas entre corchetes:** `[YOU]`, `[OVERLORD]`, `[JTAC]`, etc. **SON INTRADUCIBLES.**
+          - **Nombres de escuadrones, unidades y equipos de demostración** (ej: 65th Aggressor Squadron, Thunderbirds, Blue Angels).
           - Designaciones de sistemas de armas (ej: AIM-120C, SA-11, F-16C).
           - Códigos de brevity (ej: FOX-3, SPLASH, WINCHESTER, Tally, No Joy, Merge).
           - Términos tácticos estandarizados en inglés (ej: CAP, JTAC, AWACS, SAM, AAA, BVR, SEAD).

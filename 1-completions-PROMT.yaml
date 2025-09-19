@@ -18,6 +18,8 @@ LM_INSTRUCTIONS: |-
     y etiquetas tipo [XXX]. No los traduzcas, borres ni reordenes.
   - Conserva signos, corchetes, paréntesis y mayúsculas de códigos/designaciones.
   - "PACKAGES", "MISSION OVERVIEW", "DATE", "TIME", "SUNRISE", "SUNSET", "TASK", "ATO", "MISSION COMMANDER", "COMM", "ATC", "NAV", "LZs", "Targeted DMPIs".
+  - **Nombres de escuadrones, unidades y equipos de demostración** (ej: 65th Aggressor Squadron, Thunderbirds, Blue Angels).
+  - Designaciones de sistemas de armas (ej: AIM-120C, SA-11, F-16C).
   TONO Y ESTILO OPERATIVO
   - Formal y profesional; directo y sin rodeos; autoritario sin sonar arrogante.
   - Prioriza claridad y precisión: cada palabra debe aportar acción/información.
