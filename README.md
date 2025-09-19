@@ -18,7 +18,7 @@ Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studi
 
 1. Instalación de LM STUDIO https://lmstudio.ai/
 
-Configurar segun los requerientos de tu PC, lo ideal es activar el uso de la GPU. 
+Configurar segun los requerientos de tu PC, lo ideal es activar el uso de la GPU.
 
 Se elige el runtime compatible con tu equipo.
 
@@ -57,13 +57,13 @@ Estan los ejemplos en el propio fichero y en EXAMPLES.
 
 ```
 
-# puedes pasarle cualquier archivo "config-F5.txt", es un ejemplo
+# puedes pasarle cualquier archivo, "config-F5.txt" es un ejemplo pero es obligatorio pasarle el fichero.
 
 python orquestador.py --config "config-F5.txt"
 
 ```
 
-Lee lo que tengamos en `config-F5.txt`, importante dejarlo bien configurado.
+Lee lo que tengamos en `config-F5.txt`, importante dejarlo bien configurado y adaptado a tu equipo.
 
 "ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns" (CAMBIAR) indica donde tienes las misiones de DCS y las autodetecta.
 
