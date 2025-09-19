@@ -94,8 +94,6 @@ def log_lm_api_settings(cfg: Dict, args) -> None:
     logging.info("Modelo (--lm-model) = %s", getattr(args, "lm_model", "(por defecto)"))
     logging.info("Endpoint (--lm-url) = %s", getattr(args, "lm_url", "(por defecto)"))
 
-
-
 # --- CONFIG ---
 
 def load_config(path: Optional[str]) -> Dict:
@@ -257,6 +255,7 @@ def protect_terms(text: str, terms) -> str:
         pat = re.compile(rf'(?<![A-Za-z0-9]){re.escape(term)}(?![A-Za-z0-9])', re.IGNORECASE)
         text = pat.sub(term, text)
     return text
+
 
 # --- LLAMADAS AL MODELO ---
 
@@ -604,6 +603,7 @@ def process_file(lua_path, batch_size, timeout, keys_filter, cfg, output_dir, lm
     with open(out_lua_path, "w", encoding="utf-8", newline="") as f:
         f.write(final_text)
     logging.info(f"¡Listo! Fichero traducido: {out_lua_path}")
+
 
 # --- MAIN ---
 

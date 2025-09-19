@@ -1,9 +1,11 @@
 *CAMPAIGNS_TO_TRANSLATE*/
 *CAMPAIGNS_TRANSLATED*/
+*campaings*
 *PRESENTS_LM*/
 *CANDIDATE*/
 *out_lua*/
 *temp_missions*/
 *.log*
+*log_orquestador*
 .old/
 .private/

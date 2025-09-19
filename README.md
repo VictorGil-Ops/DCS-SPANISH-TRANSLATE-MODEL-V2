@@ -9,6 +9,7 @@ Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studi
 
 - Requiere Python 3.8+
 - LM Studio
+- VSCODE (recomendado para trabajar con el script)
 
 <br>
 <br>
@@ -43,9 +44,9 @@ Se elige el runtime compatible con tu equipo.
 <br>
 <br>
 
-3. Configurar el archivo `misiones.txt`
+3. Configurar el archivo `config*.txt`
 
-Estan los ejemplos en el propio fichero.
+Estan los ejemplos en el propio fichero y en EXAMPLES.
 
 <br>
 <br>
@@ -56,27 +57,55 @@ Estan los ejemplos en el propio fichero.
 
 ```
 
-$ python orquestador.py
+# puedes pasarle cualquier archivo "config-F5.txt", es un ejemplo
+
+python orquestador.py --config "config-F5.txt"
 
 ```
 
-Lee lo que tengamos en `misiones.txt`, importante dejarlo bien configurado:
+Lee lo que tengamos en `config-F5.txt`, importante dejarlo bien configurado.
 
-- DIR_INPUT
-- FILE_TARGET
-- DIR_OUTPUT
-- ARGS
-- Listado de *.miz
+"ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns" (CAMBIAR) indica donde tienes las misiones de DCS y las autodetecta.
+
+"FILE_TARGET: l10n/DEFAULT/dictionary" le indicas donde estan el fichero a traducir dentro del .miz.
+
+"ARGS" son los argumentos para la ejecución se puede dejar tal como está, pero sirve  para cambiar el modelo --lm-model.
+
+"DEPLOY_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns" (CAMBIAR) es donde desplegamos la campañas traducidas con la opción 4.
+
+"DEPLOY_OVERWRITE: false" DEPLOY_OVERWRITE en config*.txt (true/false). Si true, sobrescribe los .miz originales con backup automático; si false, copia a Translated_ES/, en tu caperta del juego para que los sustituyas manualmente.
+
+```txt
+
+# EJEMPLOS
+
+# opción simple de lanzamiento
+# python orquestador.py --config "config-F5.txt"
+
+# opción para elegir translator 
+# python orquestador.py --config "config-F5.txt" --translator "dcs_lua_translate.py"
+
+
+ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns
+FILE_TARGET: l10n/DEFAULT/dictionary
+ARGS: "--config 2-completions-PROMT.yaml --batch-size 4 --timeout 200 --lm-model google/gemma-2-27b --lm-compat completions --lm-url http://localhost:1234/v1"
+
+# Opcionales para deploy:
+DEPLOY_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns
+DEPLOY_OVERWRITE: false
+
+```
 
 Elegimos una de las opciones:
 
-- 0: ayuda
+```txt
 
-- 1: translate
+1) translate  (extrae y traduce; NO reempaqueta)
+2) miz        (NO traduce; reempaqueta; inserta traducción si existe)
+3) all        (traduce y reempaqueta)
+4) deploy     (copiar .miz finalizados al directorio del juego)
 
-- 2: miz
-
-- 3: all
+```
 
 Cada una de las opciones está explicada en el propio script.
 
@@ -86,9 +115,9 @@ Podemos ir viendo las traducciones en tiempo real:
 
 ![alt text](images/5_LM_developer.png)
 
-En la carpeta que se genera al lanzar la traducción `out_lua`, se encuentran los ficheros de log, asi como un fichero tipo caché , donde se pueden modificar manualmente las traducciones.
+En la carpeta que se genera al lanzar la traducción `campaings\*`, se encuentran los ficheros de log, asi como un fichero tipo caché , donde se pueden modificar manualmente las traducciones y relanzar la traducción.
 
-La carpeta `temp_missions`, sirve para descomprimir temporalmente el fichero .miz.
+La carpeta `log_orquestador`, contiene logs.
 
 <br>
 <br>
