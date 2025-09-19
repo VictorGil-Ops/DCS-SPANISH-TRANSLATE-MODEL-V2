@@ -27,15 +27,19 @@
 # Argumentos globales para todas las misiones de esta lista:
 
 # ORIGEN - CAMBIAR a la ruta donde se encuentran todos los archivos .miz POR TRADUCIR. LOS TIENES QUE PONER AQUI, crea la carpeta, puedes poner la ruta donde la tengas
-#DIR_INPUT: "CAMPAIGNS_TO_TRANSLATE/nombre_de_tu_campaña/"
-DIR_INPUT: "D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns\F-5E Black Sea Resolve '79"
+#DIR_INPUT: "CAMPAIGNS_TO_TRANSLATE/excepciones/"
+#DIR_INPUT: "D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns\F-5E Black Sea Resolve '79"
+DIR_INPUT: "D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns\F-5E BFM"
+
 
 # CAMBIAR por la ruta al archivo LUA dentro de las misiones .miz de tu campaña
 FILE_TARGET: "l10n/DEFAULT/dictionary"
 
 # DESTINO - Ruta donde se encuentran los .miz ya TRADUCIDOS, tienes que moverlos tu a la carpeta del juego (te crea backup)..
 #DIR_OUTPUT: "CAMPAIGNS_TRANSLATED/nombre_de_tu_campaña/"
-DIR_OUTPUT: "CAMPAIGNS_TRANSLATED/F-5E Black Sea Resolve '79/"
+#DIR_OUTPUT: "CAMPAIGNS_TRANSLATED/F-5E Black Sea Resolve '79/"
+DIR_OUTPUT: "CAMPAIGNS_TRANSLATED/F-5E BFM/"
+
 
 # MODES --lm-compat (mejor resultado completions)
 # auto
@@ -56,6 +60,75 @@ ARGS: "--config 2-completions-PROMT.yaml --batch-size 4 --timeout 200 --lm-model
 # Pones el nombre del archivo .miz
 
 # black_resolve_79_F5_caucaso (ejemplo) lo que esté comentado (#) no se traduce.
-F5-E-C1.miz
+#F5-E-C1.miz
 #F5-E-C2.miz
 #F5-E-C3.miz
+#F5-E-C4.miz
+#F5-E-C5.miz
+#F5-E-C6.miz
+#F5-E-C7.miz
+#F5-E-C8.miz
+#F5-E-C9.miz
+#F5-E-C10.miz
+#F5-E-C11.miz
+#F5-E-C12.miz
+#F5-E-C13.miz
+#F5-E-C14.miz
+#F5-E-C15.miz
+#F5-E-C16.miz
+#F5-E-C17.miz
+#F5-E-C18.miz
+#F5-E-C19.miz
+#F5-E-C20.miz
+#F5-E-C21.miz
+#F5-E-C22.miz
+#F5-E-C23.miz
+#F5-E-C24.miz
+#F5-E-C25.miz
+
+################
+
+# F-5E BFM
+F-5E - Arrival.miz
+#F-5E - BFM Arrival.miz
+#F-5E - BFM01 1 vs 1 GO vs F-5E - Random.miz
+#F-5E - BFM01 1 vs 1 GO vs F-5E - Rookie.miz
+#F-5E - BFM01 1 vs 1 GO vs F-5E.miz
+#F-5E - BFM01 Practice 1 vs 1 GO vs F-5E.miz
+#F-5E - BFM02 1 vs 1 GO vs F-4E - Random.miz
+#F-5E - BFM02 1 vs 1 GO vs F-4E - Rookie.miz
+#F-5E - BFM02 1 vs 1 GO vs F-4E.miz
+#F-5E - BFM02 Practice 1 vs 1 GO vs F-4E.miz
+#F-5E - BFM03 1 vs 1 GO vs F-14A - Random.miz
+#F-5E - BFM03 1 vs 1 GO vs F-14A - Rookie.miz
+#F-5E - BFM03 1 vs 1 GO vs F-14A.miz
+#F-5E - BFM03 Practice 1 vs 1 GO vs F-14A.miz
+#F-5E - BFM04 1 vs 1 GO vs M-2000C - Random.miz
+#F-5E - BFM04 1 vs 1 GO vs M-2000C - Rookie.miz
+#F-5E - BFM04 1 vs 1 GO vs M-2000C.miz
+#F-5E - BFM04 Practice 1 vs 1 GO vs M-2000C.miz
+#F-5E - BFM05 1 vs 1 GO vs CF-188 - Random.miz
+#F-5E - BFM05 1 vs 1 GO vs CF-188 - Rookie.miz
+#F-5E - BFM05 1 vs 1 GO vs CF-188.miz
+#F-5E - BFM05 Practice 1 vs 1 GO vs CF-188.miz
+#F-5E - BFM06 1 vs 1 GO vs F-16C - Random.miz
+#F-5E - BFM06 1 vs 1 GO vs F-16C - Rookie.miz
+#F-5E - BFM06 1 vs 1 GO vs F-16C.miz
+#F-5E - BFM06 Practice 1 vs 1 GO vs F-16C.miz
+#F-5E - BFM07 1 vs 1 GO vs MiG-29G - Random.miz
+#F-5E - BFM07 1 vs 1 GO vs MiG-29G - Rookie.miz
+#F-5E - BFM07 1 vs 1 GO vs MiG-29G.miz
+#F-5E - BFM07 Practice 1 vs 1 GO vs MiG-29G.miz
+#F-5E - BFM08 1 vs 1 GO vs FA-18C - Random.miz
+#F-5E - BFM08 1 vs 1 GO vs FA-18C - Rookie.miz
+#F-5E - BFM08 1 vs 1 GO vs FA-18C.miz
+#F-5E - BFM08 Practice 1 vs 1 GO vs FA-18C.miz
+#F-5E - BFM09 1 vs 1 GO vs MiG-21 - Random.miz
+#F-5E - BFM09 1 vs 1 GO vs MiG-21 - Rookie.miz
+#F-5E - BFM09 1 vs 1 GO vs MiG-21.miz
+#F-5E - BFM09 Practice 1 vs 1 GO vs MiG-21.miz
+#F-5E - BFM10 1 vs 1 GO vs F-15C - Random.miz
+#F-5E - BFM10 1 vs 1 GO vs F-15C - Rookie.miz
+#F-5E - BFM10 1 vs 1 GO vs F-15C.miz
+#F-5E - BFM10 Practice 1 vs 1 GO vs F-15C.miz
+#F-5E - FAM Flight.miz
