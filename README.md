@@ -4,7 +4,7 @@ Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studi
 
 ## UPDATES CHANGELOG
 
-200925
+200925 (actualizado el 20/09/2025)
 
 Lista las misiones en dos bloques: primero normales (C1, C2, …) y luego Flaming Cliffs (-FC-).
 
@@ -38,11 +38,9 @@ Configurar segun los requerientos de tu PC, lo ideal es activar el uso de la GPU
 
 Se elige el runtime compatible con tu equipo.
 
-
 ![alt text](images/1_LM_runtime.png)
 
 ![alt text](images/2_LM_hardware.png)
-
 
 <br>
 <br>
