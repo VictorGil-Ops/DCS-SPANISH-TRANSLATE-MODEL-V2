@@ -2,6 +2,22 @@
 
 Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studio.
 
+## UPDATE
+
+200925
+
+Lista las misiones en dos bloques: primero normales (C1, C2, …) y luego Flaming Cliffs (-FC-).
+
+Pregunta si quieres incluir las -FC-.
+
+Quita el tail en vivo de los logs y muestra un porcentaje global de progreso por misiones seleccionadas.
+
+Mantiene intacto el modo deploy.
+
+Conserva la auto-carga del modelo si el modo es translate o all.
+
+Maneja nombres con espacios tipo C21 .miz.
+
 <br>
 <br>
 
@@ -14,7 +30,7 @@ Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studi
 <br>
 <br>
 
-## USO
+## USO LM STUDIO
 
 1. Instalación de LM STUDIO https://lmstudio.ai/
 
@@ -51,7 +67,9 @@ Estan los ejemplos en el propio fichero y en EXAMPLES.
 <br>
 <br>
 
-4. Ejecutar el script en la terminal (powershell, cmd o bash) con:
+## EJECUCIÓN SCRIPT
+
+1. Ejecutar el script en la terminal (powershell, cmd o bash) con:
 
 (este llama a `dcs_lua_translate.py`)
 
