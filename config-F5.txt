@@ -13,4 +13,5 @@ ARGS: "--config 2-completions-PROMT.yaml --batch-size 4 --timeout 200 --lm-model
 
 # Opcionales para deploy:
 DEPLOY_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns
+# False deja las misiones traducidas en Translated_ES/, con true reemplaza las misiones dejando un backup.
 DEPLOY_OVERWRITE: false

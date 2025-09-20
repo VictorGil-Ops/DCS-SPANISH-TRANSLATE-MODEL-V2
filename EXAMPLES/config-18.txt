@@ -1,7 +1,17 @@
 # EJEMPLOS
-# python orquestador.py --config "config-18.txt" --translator "dcs_lua_translate.py"
-# python orquestador.py --config "config-18.txt"
+
+# opción simple de lanzamiento
+# python orquestador.py --config "config-F18.txt"
+
+# opción para elegir translator 
+# python orquestador.py --config "config-F18.txt" --translator "dcs_lua_translate.py"
 
 ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns
 FILE_TARGET: l10n/DEFAULT/dictionary
 ARGS: "--config 1-completions-PROMT.yaml --batch-size 6 --timeout 300 --lm-model qwen3-30b-a3b-instruct-2507 --lm-compat completions --lm-url http://localhost:1234/v1"
+
+
+# Opcionales para deploy:
+DEPLOY_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns
+# False deja las misiones traducidas en Translated_ES/, con true reemplaza las misiones dejando un backup.
+DEPLOY_OVERWRITE: false
