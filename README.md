@@ -2,7 +2,7 @@
 
 Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studio.
 
-## UPDATE
+## UPDATES CHANGELOG
 
 200925
 
