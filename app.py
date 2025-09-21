@@ -177,7 +177,6 @@ def _git_remote_head(branch: str) -> str:
         return ""
     # formato: <hash>\trefs/heads/<branch>
     return (out.split("\t", 1)[0] or "").strip()
-  
 
 # =========================
 #  Utilidades LM Studio
@@ -208,6 +207,38 @@ def parse_lm_flags(args_str: str, fallback_url: str = DEFAULT_LM_URL):
             ident = tok.split("=", 1)[1]; i += 1; continue
         i += 1
     return (model, url or fallback_url, ident)
+
+def _fix_config_in_args(args: list[str]) -> list[str]:
+    """
+    Si --config viene con solo el nombre del archivo, lo mapeamos a PROMTS/<archivo>.
+    Respeta rutas absolutas/relativas existentes.
+    """
+    promts_dir = os.path.join(BASE_DIR, "PROMTS")
+    out = []
+    i = 0
+    while i < len(args):
+        t = args[i]
+        if t == "--config":
+            val = args[i+1] if i + 1 < len(args) else ""
+            if val and not any(sep in val for sep in ("/", "\\")):
+                cand = os.path.join(promts_dir, val)
+                out.extend([t, cand if os.path.exists(cand) else val])
+            else:
+                out.extend([t, val])
+            i += 2
+            continue
+        elif t.startswith("--config="):
+            val = t.split("=", 1)[1]
+            if val and not any(sep in val for sep in ("/", "\\")):
+                cand = os.path.join(promts_dir, val)
+                val = cand if os.path.exists(cand) else val
+            out.append(f"--config={val}")
+            i += 1
+            continue
+        else:
+            out.append(t)
+            i += 1
+    return out
 
 def _normalize_id(s: str) -> str:
     return (s or "").strip().replace("\\", "/").lower()
@@ -474,6 +505,15 @@ def translate_lua(lua_path: str, dcs_translate_script: str, ARGS: str, out_dir: 
         parsed = shlex.split(ARGS or "", posix=(os.name != "nt"))
     except Exception:
         parsed = (ARGS or "").split()
+    
+    # quitar tokens previos de --output-dir y resolver --config
+    parsed = _remove_output_dir_tokens(parsed)
+    parsed = _fix_config_in_args(parsed)
+
+    # añadir nuestro output-dir
+    parsed += ["--output-dir", out_dir]
+    cmd.extend(parsed)
+    
     parsed = _remove_output_dir_tokens(parsed) + ["--output-dir", out_dir]
     cmd.extend(parsed)
 

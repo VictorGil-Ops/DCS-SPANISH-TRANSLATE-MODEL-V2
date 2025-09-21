@@ -4,7 +4,7 @@ Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studi
 
 Versiones:
 
-v250921-1 (latest)
+v250921-2 (latest)
 
 </br>
 
@@ -12,7 +12,7 @@ v250921-1 (latest)
 
 ### ¿Cómo se ejecuta?
 
-- Opción fácil (recomendada): 
+- Opción fácil (recomendada):
 
 CMD `run_orquestador.cmd`.
 
@@ -258,7 +258,7 @@ Ten en cuenta que necesitarás una cuenta developer y pagar la suscripción a la
 
 ## UPDATES CHANGELOG
 
-- v250921-1 (actualizado el 21/09/2025)
+- v250921-2 (actualizado el 21/09/2025)
 
 Se añade front para cargar el orquestador con Flask a través del navegador.
 
@@ -267,6 +267,8 @@ Se añade:
 - Flask (web)
 - Aviso de actualizaciones
 - cmd
+
+Se arregla problema de carga de los ficheros YML de PROMT/
 
 --->
 
