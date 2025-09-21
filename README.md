@@ -258,9 +258,17 @@ Ten en cuenta que necesitarás una cuenta developer y pagar la suscripción a la
 
 ## UPDATES CHANGELOG
 
-- v250921 (actualizado el 21/09/2025)
+- v250921-1 (actualizado el 21/09/2025)
 
 Se añade front para cargar el orquestador con Flask a través del navegador.
+
+Se añade:
+
+- Flask (web)
+- Aviso de actualizaciones
+- cmd
+
+--->
 
 Lista las misiones en dos bloques: primero normales (C1, C2, …) y luego Flaming Cliffs (-FC-).
 
