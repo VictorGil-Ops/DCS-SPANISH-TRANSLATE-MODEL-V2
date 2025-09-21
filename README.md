@@ -2,9 +2,259 @@
 
 Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studio.
 
+Versiones:
+
+v250921 (latest)
+
+</br>
+
+## DCS Orquestador Traductor (Web)
+
+### ¿Cómo se ejecuta?
+
+Opción fácil (recomendada): PowerShell `run-orquestador.ps1`
+
+Coloca run-orquestador.ps1 en la misma carpeta que app.py.
+
+Haz clic derecho → Run with PowerShell (o Ejecutar con PowerShell).
+
+#### El script
+
+Comprueba si tienes Python 3.
+
+Si no lo detecta, te ofrece instalarlo automáticamente con winget.
+
+Crea (o reutiliza) un entorno virtual .venv/.
+
+Actualiza pip e instala dependencias (mínimo flask y requests, o todas las de tu requirements.txt si existe).
+
+Arranca app.py.
+
+Abre automaticamente tu navegador predeterminado en <http://localhost:5000> (tarda unos ~40 segundos con todo ya instalado, si no tarda un poco mas)
+
+Necesitas LM Studio para traducir con modelos locales (ver sugerencias). Si no hay modelo cargado/servidor activo, la UI te avisará y podrás pulsar “🔄 Escanear LM Studio” para refrescar la lista.
+
+Opción manual (para usuarios avanzados)
+
+```powershell
+
+# 1) Ve a la carpeta del proyecto
+cd .\ruta\al\proyecto
+
+# 2) (opcional) crear venv e instalar dependencias
+py -3 -m venv .venv
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install flask requests
+
+# 3) Ejecutar la app
+.\.venv\Scripts\python .\app.py
+# Luego abre http://localhost:5000 en tu navegador
+
+```
+
+</br>
+</br>
+
+## Ayudas disponibles dentro de la aplicación
+
+Cuando se abre la web del orquestador (en <http://localhost:5000>), verás:
+
+Un botón “❓ Ayuda” arriba a la derecha con una guía rápida sobre:
+
+Descarga, instalación y configuración de LM Studio.
+
+Activación del servidor local (API).
+
+Botones “?” contextuales en:
+
+Presets (qué son y cómo guardarlos/cargarlos/borrarlos).
+
+ROOT_DIR (qué carpeta seleccionar y detección automática).
+
+FILE_TARGET (qué archivo se traduce dentro del .miz).
+
+ARGS (cada parámetro: --config, --lm-compat, --batch-size, --timeout, --lm-model, --lm-url).
+
+Modo (qué hace translate, miz, all, deploy).
+
+Incluir misiones -FC- (Flaming Cliffs) (qué significa).
+
+DEPLOY_DIR y DEPLOY_OVERWRITE (dónde se copian los .miz y cómo evitar sobrescribir los originales).
+
+Estas ayudas se abren en un mini-modal con explicaciones claras y ejemplos.
+Además, en la lista de misiones aparece una leyenda arriba con los estados:
+
+✅ Deploy = empaquetada en finalizado/
+
+✨ Traducida = hay .translated.lua en out_lua/ (pero aún no se empaquetó el .miz)
+
+Sugerencias útiles
+
+LM Studio: activa la API local (Developer → Enable Local Server) y carga un modelo “Instruct”.
+Después, en la UI del orquestador pulsa “🔄 Escanear LM Studio”.
+
+Firewall: si Windows pregunta, permite a Python escuchar en 127.0.0.1:5000.
+
+Atajos: crea un acceso directo al .ps1 y usa “Run with PowerShell”.
+
+Problemas de ejecución: si PowerShell bloquea scripts, ejecuta una vez:
+
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+Actualizar dependencias: si añades librerías nuevas, crea un requirements.txt y el .ps1 las instalará.
+
+</br>
+</br>
+
+## Rutas y manejo de errores
+
+### Estructura de carpetas (lado orquestador)
+
+```text
+campaings/<slug_de_campaña>/extracted/
+Carpeta temporal donde se descomprime cada .miz al procesarlo.
+
+campaings/<slug_de_campaña>/out_lua/
+Aquí se guardan:
+
+NOMBRE_BASE.lua (copia del diccionario extraído).
+
+NOMBRE_BASE.translated.lua (resultado de la traducción).
+
+Logs del traductor dcs_translate_*.log (que luego se mueven a log_orquestador/).
+
+campaings/<slug_de_campaña>/finalizado/
+.miz empaquetados listos para deploy.
+
+campaings/<slug_de_campaña>/backup/
+Copias de seguridad de .miz originales cuando toca.
+
+log_orquestador/
+
+web_orquestador_<pid>.log: log de la app web.
+
+error.log: errores de traducción (ver siguiente sección).
+
+logs_<campaña>_<timestamp>.zip: zip de logs por campaña al finalizar.
+```
+
+Nota: el directorio ROOT_DIR que seleccionas en la UI es la carpeta del juego con las campañas originales, típicamente algo como:
+`C:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns`
+
+</br>
+
+## Estados de misiones
+
+✨ Traducida: Existe NOMBRE_BASE.translated.lua en out_lua/ para esa misión.
+
+✅ Deploy: Ya se empaquetó un .miz en finalizado/.
+
+Si ejecutas modo miz sobre una misión “✨ Traducida”, al terminar la UI la cambiará automáticamente a ✅ Deploy (sin tener que re-escanear).
+
+Captura de errores (flujo)
+
+Durante la traducción (translate_lua)
+
+Si el proceso falla, se registra un error genérico con campaña y misión.
+
+Al finalizar cada traducción, el orquestador:
+
+Lee todos los dcs_translate_*.log que el traductor dejó en out_lua/.
+
+Extrae bloques que contengan ERROR: (por ejemplo, No se pudo parsear el JSON ni el sub-JSON…).
+
+Registra cada bloque con su misión.
+
+Persistencia:
+
+Cada error se prepone en log_orquestador/error.log (los más nuevos arriba).
+
+</br>
+
+### UI
+
+En la sección “Estado” aparece un panel “Errores recientes” con hasta 50 entradas, ordenadas de más nuevas a más antiguas.
+
+Cada entrada incluye:
+
+Cabecera: `[YYYY-MM-DD HH:MM:SS] campaña::misión`
+
+Cuerpo: el texto completo del error (respetando saltos de línea y bloques ```json ...``` si aplica).
+
+Ejemplo de línea de error (en el log)
+
+```text
+[2025-09-20 20:44:53] ERROR: C21::F5-E-C21
+No se pudo parsear el JSON ni el sub-JSON. Respuesta cruda: ```json
+[{"id": "id_4552f5780ba667bc", "es": "[El Escuadrón Agresor 65 está asignado al Grupo de Tácticas Adversarias 57, ubicado en Nellis"}, ...]
+```
+
+La cabecera incluye `campaña::misión` y el cuerpo mantiene el bloque JSON tal cual.
+
+</br>
+</br>
+
+### ¿Cómo solucionar errores comunes?
+
+#### 1. "No se pudo parsear el JSON…"
+
+Revisa el dcs_translate_*.log asociado y el bloque de respuesta.
+
+Suele deberse a que el modelo no cerró brackets/comillas o introdujo texto adicional fuera del JSON.
+
+Prueba con:
+
+Aumentar --timeout.
+
+Reducir --batch-size (por ejemplo, 1–2).
+
+Cambiar/ajustar --config (YAML con reglas más estrictas: “responder solo JSON válido”).
+
+Probar otro modelo más estable para tareas estructuradas.
+
+</br>
+
+#### 2. "No aparece translated.lua o está vacío"
+
+Asegúrate de que FILE_TARGET apunta al diccionario correcto dentro del .miz.
+Por defecto: l10n/DEFAULT/dictionary (o l10n/RUS/dictionary, etc. según la campaña).
+
+</br>
+
+#### 3. "No detecta el modelo en LM Studio"
+
+Verifica que la API local está activa (Developer → Enable Local Server).
+
+Comprueba que la URL en --lm-url sea <http://localhost:1234/v1> (o la que corresponda).
+
+Pulsa “🔄 Escanear LM Studio” para refrescar.
+
+</br>
+</br>
+
+## EXTRA V1(BETA) - este script se integrará en el futuro en el modelo V2 para poder usar modelos públicos
+
+Si queremos usar un modelo público (deepseek, chatgpt, etc) usar el script dentro de la carpeta `EXTRA V1(BETA)`.
+
+Ten en cuenta que necesitarás una cuenta developer y pagar la suscripción a la API.
+
+</br>
+</br>
+
+## REQUISITOS
+
+- Requiere Python 3.8+
+- LM Studio
+- VSCODE (recomendado para trabajar con el script)
+
+</br>
+</br>
+
 ## UPDATES CHANGELOG
 
-200925 (actualizado el 20/09/2025)
+- v250921 (actualizado el 21/09/2025)
+
+Se añade front para cargar el orquestador con Flask a través del navegador.
 
 Lista las misiones en dos bloques: primero normales (C1, C2, …) y luego Flaming Cliffs (-FC-).
 
@@ -17,129 +267,3 @@ Mantiene intacto el modo deploy.
 Conserva la auto-carga del modelo si el modo es translate o all.
 
 Maneja nombres con espacios tipo C21 .miz.
-
-<br>
-<br>
-
-## REQUISITOS
-
-- Requiere Python 3.8+
-- LM Studio
-- VSCODE (recomendado para trabajar con el script)
-
-<br>
-<br>
-
-## USO LM STUDIO
-
-1. Instalación de LM STUDIO https://lmstudio.ai/
-
-Configurar segun los requerientos de tu PC, lo ideal es activar el uso de la GPU.
-
-Se elige el runtime compatible con tu equipo.
-
-![alt text](images/1_LM_runtime.png)
-
-![alt text](images/2_LM_hardware.png)
-
-<br>
-<br>
-
-2. Una vez configurado instalar uno de estos dos modelos, o cualquier otro que quieras probar, se recomiendan los tipo "instruct", lo que he probado son estos dos:
-
-(desde "Discover")
-
-- `lmstudio-community/gemma-2-27b-it-GGUF` : mejor y mas preciso, pero mas lento.
-
-- `unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF` : más rápido, menos preciso.
-
-![alt text](images/3_LM_search.png)
-
-<br>
-<br>
-
-3. Configurar el archivo `config*.txt`
-
-Estan los ejemplos en el propio fichero y en EXAMPLES.
-
-<br>
-<br>
-
-## EJECUCIÓN SCRIPT
-
-1. Ejecutar el script en la terminal (powershell, cmd o bash) con:
-
-(este llama a `dcs_lua_translate.py`)
-
-```
-
-# puedes pasarle cualquier archivo, "config-F5.txt" es un ejemplo pero es obligatorio pasarle el fichero.
-
-python orquestador.py --config "config-F5.txt"
-
-```
-
-Lee lo que tengamos en `config-F5.txt`, importante dejarlo bien configurado y adaptado a tu equipo.
-
-1 - `ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns` (CAMBIAR) indica donde tienes las campañas/misiones en DCS y las autodetecta.
-
-2 - `FILE_TARGET: l10n/DEFAULT/dictionary` le indicas donde estan el fichero a traducir dentro del .miz.
-
-3 - `ARGS` son los argumentos para la ejecución, se puede dejar tal como está, pero sirve  para cambiar el modelo --lm-model esto si lo tienes que cambiar si no utilizas gemma.
-
-4 - `DEPLOY_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns` (CAMBIAR) es donde desplegamos la campañas traducidas con la opción 4.
-
-5 - `DEPLOY_OVERWRITE: false` DEPLOY_OVERWRITE en config*.txt (true/false). Si true, sobrescribe los .miz originales con backup automático; si false, copia a Translated_ES/, en tu caperta del juego para que los sustituyas manualmente.
-
-```txt
-
-# EJEMPLOS
-
-# opción simple de lanzamiento
-# python orquestador.py --config "config-F5.txt"
-
-# opción para elegir translator 
-# python orquestador.py --config "config-F5.txt" --translator "dcs_lua_translate.py"
-
-
-ROOT_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns
-FILE_TARGET: l10n/DEFAULT/dictionary
-ARGS: "--config 2-completions-PROMT.yaml --batch-size 4 --timeout 200 --lm-model google/gemma-2-27b --lm-compat completions --lm-url http://localhost:1234/v1"
-
-# Opcionales para deploy:
-DEPLOY_DIR: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns
-DEPLOY_OVERWRITE: false
-
-```
-
-Elegimos una de las opciones:
-
-```txt
-
-1) translate  (extrae y traduce; NO reempaqueta)
-2) miz        (NO traduce; reempaqueta; inserta traducción si existe)
-3) all        (traduce y reempaqueta)
-4) deploy     (copiar .miz finalizados al directorio del juego)
-
-```
-
-Cada una de las opciones está explicada en el propio script.
-
-![alt text](images/4_terminal.png)
-
-Podemos ir viendo las traducciones en tiempo real:
-
-![alt text](images/5_LM_developer.png)
-
-En la carpeta que se genera al lanzar la traducción `campaings\*`, se encuentran los ficheros de log, asi como un fichero tipo caché , donde se pueden modificar manualmente las traducciones y relanzar la traducción.
-
-La carpeta `log_orquestador`, contiene logs.
-
-<br>
-<br>
-
-## EXTRA V1(BETA)
-
-Si queremos usar un modelo público (deepseek, chatgpt, etc) usar el script dentro de la carpeta `EXTRA V1(BETA)`.
-
-Ten en cuenta que necesitarás una cuenta developer y pagar la suscripción a la API.

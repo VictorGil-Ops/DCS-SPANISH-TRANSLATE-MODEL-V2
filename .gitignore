@@ -9,3 +9,4 @@
 *log_orquestador*
 .old/
 .private/
+.venv
