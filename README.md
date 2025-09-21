@@ -12,11 +12,35 @@ v250921 (latest)
 
 ### ¿Cómo se ejecuta?
 
-Opción fácil (recomendada): PowerShell `run-orquestador.ps1`
+- Opción fácil (recomendada): 
 
-Coloca run-orquestador.ps1 en la misma carpeta que app.py.
+CMD `run_orquestador.cmd`.
 
-Haz clic derecho → Run with PowerShell (o Ejecutar con PowerShell).
+Coloca run_orquestador.cmd en la misma carpeta que `run_orquestador.ps1` y `app.py`.
+
+Doble click sobre `run_orquestador.cmd`.
+
+- Segunda opción:
+
+Haz clic derecho `run_orquestador.ps1` → Run with PowerShell (o Ejecutar con PowerShell).
+
+- Tercera opción:
+
+```powershell
+
+# 1) Ve a la carpeta del proyecto
+cd .\ruta\al\proyecto
+
+# 2) (opcional) crear venv e instalar dependencias
+py -3 -m venv .venv
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install flask requests
+
+# 3) Ejecutar la app
+.\.venv\Scripts\python .\app.py
+# Luego abre http://localhost:5000 en tu navegador
+
+```
 
 #### El script
 
@@ -36,21 +60,7 @@ Necesitas LM Studio para traducir con modelos locales (ver sugerencias). Si no h
 
 Opción manual (para usuarios avanzados)
 
-```powershell
 
-# 1) Ve a la carpeta del proyecto
-cd .\ruta\al\proyecto
-
-# 2) (opcional) crear venv e instalar dependencias
-py -3 -m venv .venv
-.\.venv\Scripts\python -m pip install --upgrade pip
-.\.venv\Scripts\python -m pip install flask requests
-
-# 3) Ejecutar la app
-.\.venv\Scripts\python .\app.py
-# Luego abre http://localhost:5000 en tu navegador
-
-```
 
 </br>
 </br>
