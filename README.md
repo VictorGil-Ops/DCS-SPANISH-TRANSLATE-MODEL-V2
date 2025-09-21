@@ -24,7 +24,7 @@ Doble click sobre `run_orquestador.cmd`.
 
 Haz clic derecho `run_orquestador.ps1` → Run with PowerShell (o Ejecutar con PowerShell).
 
-- Tercera opción:
+- Tercera opción Opción manual (para usuarios avanzados):
 
 ```powershell
 
@@ -57,10 +57,6 @@ Arranca app.py.
 Abre automaticamente tu navegador predeterminado en <http://localhost:5000> (tarda unos ~40 segundos con todo ya instalado, si no tarda un poco mas)
 
 Necesitas LM Studio para traducir con modelos locales (ver sugerencias). Si no hay modelo cargado/servidor activo, la UI te avisará y podrás pulsar “🔄 Escanear LM Studio” para refrescar la lista.
-
-Opción manual (para usuarios avanzados)
-
-
 
 </br>
 </br>
