@@ -4,7 +4,7 @@ Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studi
 
 Versiones:
 
-v250921 (latest)
+v250921-1 (latest)
 
 </br>
 

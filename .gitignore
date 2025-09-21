@@ -10,3 +10,4 @@
 .old/
 .private/
 .venv
+.update_info.json

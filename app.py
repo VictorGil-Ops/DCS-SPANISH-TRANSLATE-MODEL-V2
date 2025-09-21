@@ -36,6 +36,149 @@ APP_VERSION = _read_version()
 DEFAULT_LM_URL = "http://localhost:1234/v1"
 LMSTUDIO_CLI = os.environ.get("LMSTUDIO_CLI", "lms")  # opcional, ruta al CLI
 
+# === Config actualización online ===
+ORQ_VERSION_URL = os.environ.get("ORQ_VERSION_URL", "").strip()  # raw URL a VERSION en GitHub
+ORQ_BRANCH = os.environ.get("ORQ_BRANCH", "main").strip()
+
+# Directorios que NO deben perderse durante updates
+PROTECT_PATHS = ["campaings", "log_orquestador"]
+
+def _version_key(v: str) -> tuple:
+    """
+    Convierte 'v210925' o '210925' en clave comparable; si no matchea, usa la cadena.
+    """
+    v = (v or "").strip().lower()
+    m = re.search(r"v?(\d+)", v)
+    if m:
+        try:
+            return (int(m.group(1)), )
+        except Exception:
+            pass
+    return (v, )
+
+def _fetch_remote_version(url: str, timeout: float = 5.0) -> str:
+    if not url:
+        return ""
+    try:
+        r = requests.get(url, timeout=timeout)
+        r.raise_for_status()
+        return (r.text or "").strip()
+    except Exception as e:
+        logging.info("No se pudo obtener VERSION remota: %s", e)
+        return ""
+
+def _safe_git_pull(base_dir: str, branch: str = "main", protect_paths=None) -> tuple[bool, str]:
+    """
+    Hace git pull protegiendo carpetas locales (se mueven a backup temporal y se reponen).
+    """
+    protect_paths = protect_paths or []
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_root = os.path.join(base_dir, f"._update_protect_{ts}")
+    os.makedirs(backup_root, exist_ok=True)
+
+    moved = []
+    try:
+        # 1) Mover protegidos si existen
+        for rel in protect_paths:
+            src = os.path.join(base_dir, rel)
+            if os.path.exists(src):
+                dst = os.path.join(backup_root, rel)
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.move(src, dst)
+                moved.append((src, dst))
+                logging.info("Protegido (movido): %s -> %s", src, dst)
+
+        # 2) git fetch + pull
+        def _run(cmd):
+            logging.info("RUN: %s", " ".join(cmd))
+            return subprocess.run(cmd, cwd=base_dir, capture_output=True, text=True, shell=False)
+
+        # Asegurar repo
+        r = _run(["git", "rev-parse", "--is-inside-work-tree"])
+        if r.returncode != 0:
+            raise RuntimeError("Este directorio no es un repositorio git válido.")
+
+        _run(["git", "fetch", "--all", "--tags"])
+        r = _run(["git", "pull", "--rebase", "--autostash", "origin", branch])
+        if r.returncode != 0:
+            raise RuntimeError(f"git pull falló:\nSTDOUT:\n{r.stdout}\nSTDERR:\n{r.stderr}")
+
+        # 3) Restaurar protegidos
+        for src, bak in moved:
+            # Si tras el pull no existe el dir, lo devolvemos tal cual.
+            if not os.path.exists(src):
+                os.makedirs(os.path.dirname(src), exist_ok=True)
+                shutil.move(bak, src)
+            else:
+                # Si existe, fusionamos: movemos el contenido del backup dentro del existente.
+                for root, dirs, files in os.walk(bak):
+                    rel = os.path.relpath(root, bak)
+                    dest_root = os.path.join(src, rel) if rel != "." else src
+                    os.makedirs(dest_root, exist_ok=True)
+                    for d in dirs:
+                        os.makedirs(os.path.join(dest_root, d), exist_ok=True)
+                    for f in files:
+                        shutil.move(os.path.join(root, f), os.path.join(dest_root, f))
+                shutil.rmtree(bak, ignore_errors=True)
+
+        # 4) Limpieza
+        shutil.rmtree(backup_root, ignore_errors=True)
+        return True, "Actualización completada correctamente."
+    except Exception as e:
+        # Intentar revertir: devolver protegidos si quedaron fuera
+        for src, bak in moved:
+            try:
+                if not os.path.exists(src) and os.path.exists(bak):
+                    os.makedirs(os.path.dirname(src), exist_ok=True)
+                    shutil.move(bak, src)
+            except Exception:
+                pass
+        try:
+            shutil.rmtree(backup_root, ignore_errors=True)
+        except Exception:
+            pass
+        return False, f"Error en actualización: {e}"
+    
+def _run_git(args: list[str]) -> tuple[int, str, str]:
+    try:
+        p = subprocess.run(
+            ["git", *args],
+            cwd=BASE_DIR,
+            capture_output=True,
+            text=True,
+            shell=False,
+        )
+        return p.returncode, (p.stdout or "").strip(), (p.stderr or "").strip()
+    except Exception as e:
+        return 1, "", str(e)
+
+def _git_origin_https() -> str:
+    rc, url, _ = _run_git(["config", "--get", "remote.origin.url"])
+    if rc != 0 or not url:
+        return ""
+    # normalizar a https navegable
+    if url.startswith("git@"):
+        # git@github.com:owner/repo.git -> https://github.com/owner/repo
+        host_path = url.split(":", 1)[-1].replace(".git", "")
+        host = url.split("@", 1)[-1].split(":", 1)[0]
+        return f"https://{host}/{host_path}"
+    if url.startswith("https://") or url.startswith("http://"):
+        return url.replace(".git", "")
+    return ""
+
+def _git_local_head() -> str:
+    rc, out, _ = _run_git(["rev-parse", "HEAD"])
+    return out if rc == 0 else ""
+
+def _git_remote_head(branch: str) -> str:
+    # git ls-remote origin refs/heads/<branch>
+    rc, out, _ = _run_git(["ls-remote", "origin", f"refs/heads/{branch}"])
+    if rc != 0 or not out:
+        return ""
+    # formato: <hash>\trefs/heads/<branch>
+    return (out.split("\t", 1)[0] or "").strip()
+  
+
 # =========================
 #  Utilidades LM Studio
 # =========================
@@ -624,6 +767,16 @@ INDEX_HTML = r"""
   </div>
 </div>
 
+<!-- Banner de actualización (auto-oculto si no hay nueva versión) -->
+<div id="updateBanner" style="display:none; margin:8px 0 0 0;">
+  <div style="border:1px solid #fde68a; background:#fffbeb; color:#92400e; padding:8px 10px; border-radius:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <div><strong>Nueva versión disponible:</strong> <span id="latestVer"></span></div>
+    <button type="button" id="btnUpdateNow">Actualizar ahora</button>
+    <a id="updateLink" href="#" target="_blank" rel="noopener">Ver en GitHub</a>
+    <span id="updMsg" class="muted"></span>
+  </div>
+</div>
+
 <form id="cfg">
   <fieldset class="box">
     <legend>Configuración</legend>
@@ -1199,6 +1352,52 @@ INDEX_HTML = r"""
       if (missions && missions.length) renderMissions(missions);
     });
   });
+    // --- Check & banner de actualización ---
+  async function checkUpdateBanner(){
+    try{
+      const r = await fetch('/update_info');
+      const js = await r.json();
+      const box = document.getElementById('updateBanner');
+      const a = document.getElementById('updateLink');
+      if (js && js.ok && js.is_newer) {
+        const reason = js.by && js.by.version_file ? 'archivo VERSION' :
+                      js.by && js.by.git_head ? 'commits nuevos' : 'actualización disponible';
+        document.getElementById('latestVer').textContent =
+          (js.latest_version ? `${js.latest_version} (${reason})` : `(${reason})`);
+        if (js.repo_url) a.href = js.repo_url;
+        box.style.display = '';
+      } else {
+        box.style.display = 'none';
+      }
+    } catch(e){
+      console.warn('update_info fail', e);
+    }
+  }
+
+  async function doUpdateNow(){
+    const btn = document.getElementById('btnUpdateNow');
+    const msg = document.getElementById('updMsg');
+    if (!confirm('¿Actualizar ahora desde el repositorio? Se mantendrán "campaings/" y "log_orquestador/".')) return;
+    btn.disabled = true; msg.textContent = 'Actualizando...';
+    try{
+      const r = await fetch('/update_now', { method:'POST' });
+      const js = await r.json();
+      if (js.ok){
+        msg.textContent = 'Listo. Recargando...';
+        setTimeout(()=>location.reload(), 1000);
+      } else {
+        msg.textContent = (js.error || 'Fallo en la actualización');
+        btn.disabled = false;
+      }
+    }catch(e){
+      console.error(e);
+      msg.textContent = 'Error en la petición.';
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('btnUpdateNow').onclick = doUpdateNow;
+
 
   // RUN / CANCEL / POLL
   document.getElementById('run').onclick = async ()=>{
@@ -1279,6 +1478,8 @@ INDEX_HTML = r"""
   }
 
   // Inicial
+  checkUpdateBanner();
+  setInterval(checkUpdateBanner, 10*60*1000); // re-chequear cada 10 min
   renderPresetList();
   wireHelpButtons();
 })();
@@ -1437,6 +1638,69 @@ def shutdown():
             os._exit(0)
         threading.Thread(target=_die2, daemon=True).start()
         return jsonify(ok=True, note=f"Fallback shutdown por excepción: {e}")
+
+@app.get("/update_info")
+def update_info():
+    """
+    Compara:
+      1) VERSION local vs VERSION remota (si ORQ_VERSION_URL está configurada)
+      2) HEAD local vs HEAD remoto (git), independientemente del punto 1
+    Muestra banner si cualquiera indica que hay nueva versión/commit.
+    """
+    latest = ""
+    repo_url = ""
+    # 1) Comparación por VERSION
+    if ORQ_VERSION_URL:
+        try:
+            latest = _fetch_remote_version(ORQ_VERSION_URL)
+            if "raw.githubusercontent.com" in ORQ_VERSION_URL:
+                parts = ORQ_VERSION_URL.split("/")
+                if len(parts) >= 6:
+                    user = parts[3]; repo = parts[4]
+                    repo_url = f"https://github.com/{user}/{repo}"
+        except Exception as e:
+            logging.info("update_info: no fue posible leer VERSION remota: %s", e)
+
+    is_newer_version = False
+    if latest:
+        try:
+            is_newer_version = _version_key(latest) > _version_key(APP_VERSION)
+        except Exception:
+            is_newer_version = (latest.strip() != APP_VERSION.strip())
+
+    # 2) Comparación por git (HEAD)
+    local_head = _git_local_head()
+    remote_head = _git_remote_head(ORQ_BRANCH)
+    is_newer_git = bool(local_head and remote_head and (local_head != remote_head))
+
+    # Repo URL por git si no lo dedujimos arriba
+    if not repo_url:
+        repo_url = _git_origin_https()
+
+    return jsonify({
+        "ok": True,
+        "local_version": APP_VERSION,
+        "latest_version": latest,
+        "local_head": local_head,
+        "remote_head": remote_head,
+        "is_newer": bool(is_newer_version or is_newer_git),
+        "by": {
+            "version_file": bool(is_newer_version),
+            "git_head": bool(is_newer_git),
+        },
+        "repo_url": repo_url
+    })
+
+
+@app.post("/update_now")
+def update_now():
+    """
+    Ejecuta git pull seguro preservando PROTECT_PATHS.
+    """
+    ok, msg = _safe_git_pull(BASE_DIR, branch=ORQ_BRANCH, protect_paths=PROTECT_PATHS)
+    status_code = 200 if ok else 500
+    return jsonify({"ok": ok, "message": msg, "local_version": APP_VERSION}), status_code
+
 
 # ----------- Run -----------
 if __name__ == "__main__":

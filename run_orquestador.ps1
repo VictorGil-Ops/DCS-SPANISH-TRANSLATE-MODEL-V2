@@ -1,179 +1,208 @@
-param(
-  [int]$Port = 5000,
-  [string]$HostIP = "127.0.0.1",
-  [int]$WaitSeconds = 180,
-  [switch]$UseVenv,
-  [switch]$PauseOnExit
+Param(
+  [switch]$UseVenv = $true,
+  [switch]$PauseOnExit = $false,
+  [switch]$CheckForUpdates = $true
 )
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-try {
-  $ppid = (Get-CimInstance Win32_Process -Filter "ProcessId=$PID").ParentProcessId
-  $parentName = (Get-Process -Id $ppid -ErrorAction SilentlyContinue).ProcessName
-  if ($parentName -and $parentName -ieq 'explorer') { $PauseOnExit = $true }
-} catch {}
+# ========================
+# Configuración del repo
+# ========================
+# TODO: PON TUS URLs AQUI:
+$RepoRawVersionUrl = 'https://raw.githubusercontent.com/VictorGil-Ops/DCS-SPANISH-TRANSLATE-MODEL-V2/main/VERSION'   # <-- EDITA
+$RepoWebUrl        = 'https://github.com/VictorGil-Ops/DCS-SPANISH-TRANSLATE-MODEL-V2'                               # <-- EDITA
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$LogPath   = Join-Path $ScriptDir "run_orquestador_ps.log"
-try { Start-Transcript -Path $LogPath -Append -ErrorAction SilentlyContinue | Out-Null } catch {}
+# ========================
+# Utilidades
+# ========================
+$ErrorActionPreference = 'Stop'
+$ScriptDir = Split-Path -Parent $PSCommandPath
+Set-Location $ScriptDir
 
 function Write-Info($msg){ Write-Host "[INFO] $msg" -ForegroundColor Cyan }
-function Write-Warn($msg){ Write-Host "[WARN] $msg" -ForegroundColor Yellow }
-function Write-Err ($msg){ Write-Host "[ERROR] $msg" -ForegroundColor Red }
+function Write-Err($msg){ Write-Host "[ERROR] $msg" -ForegroundColor Red }
+function Pause-IfNeeded(){ if($PauseOnExit){ Write-Host ""; Read-Host "Pulsa ENTER para cerrar" > $null } }
 
-function Test-Command($name){ $null -ne (Get-Command $name -ErrorAction SilentlyContinue) }
+function Get-LocalVersion {
+  $v = $env:ORQ_VERSION
+  if (![string]::IsNullOrWhiteSpace($v)) { return $v.Trim() }
+  $file = Join-Path $ScriptDir 'VERSION'
+  if (Test-Path $file) { return (Get-Content -LiteralPath $file -Raw).Trim() }
+  return 'dev'
+}
 
-function Get-PythonCmd(){
-  if (Test-Command "python") { return "python" }
-  if (Test-Command "py")     { return "py -3" }
+function Get-RemoteVersion {
+  param([string]$Url)
+  try {
+    $resp = Invoke-WebRequest -UseBasicParsing -Uri $Url -TimeoutSec 10
+    return ($resp.Content.Trim())
+  } catch {
+    return $null
+  }
+}
+
+function VersionToInt {
+  param([string]$v)
+  if ([string]::IsNullOrWhiteSpace($v)) { return 0 }
+  $digits = ($v -replace '[^\d]','')
+  if ([string]::IsNullOrWhiteSpace($digits)) { return 0 }
+  return [int64]$digits
+}
+
+function Save-UpdateInfoJson {
+  param([string]$local,[string]$latest,[bool]$isNewer)
+  $obj = [ordered]@{
+    local_version  = $local
+    latest_version = $latest
+    is_newer       = $isNewer
+    ts             = (Get-Date).ToString('s')
+  }
+  $json = ($obj | ConvertTo-Json -Depth 5)
+  Set-Content -LiteralPath (Join-Path $ScriptDir '.update_info.json') -Value $json -Encoding UTF8
+}
+
+function Clear-UpdateInfoJson {
+  if (Test-Path (Join-Path $ScriptDir '.update_info.json')) {
+    Remove-Item -LiteralPath (Join-Path $ScriptDir '.update_info.json') -Force -ErrorAction SilentlyContinue
+  }
+}
+
+# ========================
+# Mensaje de paciencia
+# ========================
+Write-Host "==============================================="
+Write-Host "  DCS Orquestador Traductor (Web) - Lanzando…  "
+Write-Host "==============================================="
+Write-Host "Nota: la primera apertura del navegador puede tardar ~90s." -ForegroundColor Yellow
+Write-Host ""
+
+# ========================
+# Comprobar actualizaciones (opcional)
+# ========================
+$LocalVer  = Get-LocalVersion
+$LatestVer = $null
+$IsNewer   = $false
+
+if ($CheckForUpdates) {
+  Write-Info "Versión local: $LocalVer"
+  $LatestVer = Get-RemoteVersion -Url $RepoRawVersionUrl
+  if ($LatestVer) {
+    Write-Info "Versión remota: $LatestVer"
+    $IsNewer = (VersionToInt $LatestVer) -gt (VersionToInt $LocalVer)
+    if ($IsNewer) {
+      Write-Host ""
+      $ans = Read-Host "Hay una version nueva ($LatestVer) - Quieres actualizar el repo ahora? [S/n]"
+      if ($ans -match '^(s|si|sí|y|yes|)$') {
+        # Actualizar usando git si es un clon
+        if (Test-Path (Join-Path $ScriptDir '.git')) {
+          $git = (Get-Command git -ErrorAction SilentlyContinue)
+          if ($git) {
+            try {
+              Write-Info "Actualizando desde git…"
+              git fetch --all
+              git pull --rebase --autostash
+              Write-Info "Repositorio actualizado. (Las carpetas no trackeadas como campaings/ y log_orquestador/ no se tocan)"
+              # Releer versión y limpiar aviso
+              $LocalVer = Get-LocalVersion
+              Clear-UpdateInfoJson
+            } catch {
+              Write-Err "git pull fallo: $($_.Exception.Message)"
+              Save-UpdateInfoJson -local $LocalVer -latest $LatestVer -isNewer $true
+            }
+          } else {
+            Write-Err "No se encontro 'git' en PATH. Abre $RepoWebUrl para actualizar manualmente."
+            Save-UpdateInfoJson -local $LocalVer -latest $LatestVer -isNewer $true
+          }
+        } else {
+          Write-Err "Este directorio no parece un clon git (.git no existe). Abre $RepoWebUrl y descarga la última version."
+          Save-UpdateInfoJson -local $LocalVer -latest $LatestVer -isNewer $true
+        }
+      } else {
+        # No actualizar: avisar en UI
+        Save-UpdateInfoJson -local $LocalVer -latest $LatestVer -isNewer $true
+      }
+    } else {
+      Clear-UpdateInfoJson
+    }
+  } else {
+    Write-Host "[WARN] No se pudo consultar la versión remota. Continuando…" -ForegroundColor DarkYellow
+  }
+}
+
+# ========================
+# Python + venv + deps
+# ========================
+function Ensure-Python {
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if ($py) { return "python" }
+  $py = Get-Command py -ErrorAction SilentlyContinue
+  if ($py) { return "py -3" }
   return $null
 }
 
-function Ensure-Python(){
-  $py = Get-PythonCmd
-  if ($py) {
-    Write-Info "Python detectado: $($py) ($(& $py --version))"
-    return $py
+$Python = Ensure-Python
+if (-not $Python) {
+  $ans = Read-Host "No se detecto Python. ¿Deseas instalarlo desde python.org? [S/n]"
+  if ($ans -match '^(s|si|sí|y|yes|)$') {
+    Start-Process "https://www.python.org/downloads/" -WindowStyle Normal
+    Write-Host "Instala Python y vuelve a ejecutar este script." -ForegroundColor Yellow
   }
-  Write-Warn "Python no está instalado."
-  $r = Read-Host "¿Quieres instalar Python ahora con winget? (s/N)"
-  if ($r -match '^(s|si|sí|y|yes)$'){
-    if (-not (Test-Command "winget")) {
-      Write-Err "winget no está disponible. Instala Python manualmente y vuelve a ejecutar."
-      throw "Python no disponible"
-    }
-    Write-Info "Instalando Python 3.x con winget..."
-    winget install -e --id Python.Python.3 --source winget --accept-package-agreements --accept-source-agreements
-    $py = Get-PythonCmd
-    if (-not $py) { throw "No se pudo instalar/detectar Python automáticamente." }
-    Write-Info "Python instalado: $(& $py --version)"
-    return $py
-  } else {
-    throw "Python requerido. Aborta."
-  }
+  Pause-IfNeeded
+  exit
 }
 
-# == NUEVO: crear/usar venv y devolver la ruta *exacta* del python de la venv ==
-function Ensure-VenvAndGetPython($py){
-  $venvPath = Join-Path $ScriptDir ".venv"
-  if (-not $UseVenv -and -not (Test-Path $venvPath)) {
-    return $py  # no usar venv
+Write-Info "Python detectado: $Python"
+$VenvDir = Join-Path $ScriptDir ".venv"
+$ActivatePs1 = (Join-Path $VenvDir "Scripts\Activate.ps1") # Windows layout
+
+if ($UseVenv) {
+  if (-not (Test-Path $ActivatePs1)) {
+    Write-Info "Creando entorno virtual: $VenvDir"
+    iex "& $Python -m venv `"$VenvDir`""
   }
-
-  if (-not (Test-Path $venvPath)) {
-    Write-Info "Creando entorno virtual en .venv ..."
-    & $py -m venv $venvPath
+  if (-not (Test-Path $ActivatePs1)) {
+    Write-Err "No se encontró el activador de venv: $ActivatePs1"
+    Pause-IfNeeded; exit 1
   }
-
-  # Rutas candidatas al ejecutable de python dentro de la venv
-  $pyWin = Join-Path $venvPath "Scripts\python.exe"
-  $pyNix = Join-Path $venvPath "bin/python"
-  $pyCmd = $null
-
-  if (Test-Path $pyWin) { $pyCmd = $pyWin }
-  elseif (Test-Path $pyNix) { $pyCmd = $pyNix }
-
-  if (-not $pyCmd) {
-    Write-Warn "No se localizó el ejecutable de Python dentro de .venv. Intento activar (mejor esfuerzo)."
-    $actPSWin = Join-Path $venvPath "Scripts\Activate.ps1"
-    $actPSNix = Join-Path $venvPath "bin\Activate.ps1"
-    if (Test-Path $actPSWin) { . $actPSWin; $pyCmd = "python" }
-    elseif (Test-Path $actPSNix) { . $actPSNix; $pyCmd = "python" }
-  }
-
-  if (-not $pyCmd) { throw "No se pudo preparar la venv (.venv). Falta python dentro del entorno." }
-
-  Write-Info "Usando Python de la venv: $pyCmd ($(& $pyCmd --version))"
-  return $pyCmd
+  Write-Info "Activando entorno virtual…"
+  . $ActivatePs1
 }
 
-function Ensure-Requirements($pyCmd){
-  $req = Join-Path $ScriptDir "requirements.txt"
-  Write-Info "Actualizando pip y dependencias..."
-  & $pyCmd -m pip install --upgrade pip
-  if (Test-Path $req) {
-    & $pyCmd -m pip install -r $req
-  } else {
-    Write-Warn "requirements.txt no encontrado. Instalando dependencias mínimas."
-    & $pyCmd -m pip install flask requests
-  }
+# Instalar dependencias
+$Req = Join-Path $ScriptDir "requirements.txt"
+if (Test-Path $Req) {
+  Write-Info "Instalando dependencias desde requirements.txt…"
+  pip install -r "$Req"
+} else {
+  # fallback básico
+  pip install flask requests | Out-Null
 }
 
-function Test-PortReady($ip, $port){
+# ========================
+# Lanzar app y abrir navegador
+# ========================
+$env:ORQ_VERSION = $LocalVer
+$Url = "http://127.0.0.1:5000/"
+
+Write-Info "Lanzando servidor Flask… ($Url)"
+# Lanzar sin bloquear, esperando a que responda para abrir navegador
+$proc = Start-Process -PassThru -NoNewWindow powershell -ArgumentList @(
+  "-NoProfile","-ExecutionPolicy","Bypass","-Command",
+  "python '$ScriptDir\app.py'"
+)
+
+# Intentar ping a /status hasta OK o tiempo máx (~90s)
+$ok = $false
+for ($i=0; $i -lt 90; $i++) {
+  Start-Sleep -Seconds 1
   try {
-    $client = New-Object System.Net.Sockets.TcpClient
-    $iar = $client.BeginConnect($ip, $port, $null, $null)
-    $ok = $iar.AsyncWaitHandle.WaitOne(300)
-    $client.Close()
-    return $ok
-  } catch { return $false }
+    $status = Invoke-WebRequest -UseBasicParsing -TimeoutSec 2 -Uri ($Url + "status")
+    if ($status.StatusCode -ge 200 -and $status.StatusCode -lt 500) { $ok = $true; break }
+  } catch { }
+}
+Start-Process $Url | Out-Null
+if (-not $ok) {
+  Write-Host "[WARN] El servidor puede tardar un poco mas en estar listo. Se abrio la URL igualmente." -ForegroundColor DarkYellow
 }
 
-function Open-Browser($url){
-  Write-Info "Abriendo navegador: $url"
-  Start-Process $url | Out-Null
-}
-
-try {
-  Write-Host "== DCS Orquestador Traductor (Web) ==" -ForegroundColor Green
-  $verFile = Join-Path $ScriptDir "VERSION"
-  if (Test-Path $verFile) {
-    $ver = (Get-Content $verFile -Raw).Trim()
-    if ($ver) { Write-Host "Versión: $ver" -ForegroundColor DarkCyan }
-  }
-
-  $py = Ensure-Python
-  $py = Ensure-VenvAndGetPython $py
-  Ensure-Requirements $py
-
-  $app = Join-Path $ScriptDir "app.py"
-  if (-not (Test-Path $app)) { throw "No se encuentra app.py en $ScriptDir" }
-
-  Write-Host ""
-  Write-Info "Lanzando servidor Flask en http://$HostIP`:$Port"
-  Write-Host "Esto puede tardar ~1-2 minutos la primera vez. Ten paciencia… abriré la pestaña cuando el puerto responda." -ForegroundColor Yellow
-  Write-Host ""
-
-  # Lanzar app.py en nueva ventana
-  $psi = New-Object System.Diagnostics.ProcessStartInfo
-  $psi.FileName  = "powershell"
-  $psi.Arguments = "-NoProfile -ExecutionPolicy Bypass -Command `"& '$py' '$app'`""
-  $psi.WorkingDirectory = $ScriptDir
-  $psi.UseShellExecute = $true
-  $psi.CreateNoWindow  = $false
-  [void][System.Diagnostics.Process]::Start($psi)
-
-  # Espera activa al puerto con spinner
-  $url = "http://$HostIP`:$Port"
-  $sp = "|/-\"
-  $i = 0
-  $deadline = (Get-Date).AddSeconds($WaitSeconds)
-  while ((Get-Date) -lt $deadline) {
-    $c = $sp[$i % $sp.Length]
-    Write-Host -NoNewline "`rEsperando al servidor $c "
-    if (Test-PortReady $HostIP $Port) {
-      Write-Host "`rServidor disponible.               "
-      Open-Browser $url
-      break
-    }
-    Start-Sleep -Milliseconds 500
-    $i++
-  }
-  if (-not (Test-PortReady $HostIP $Port)) {
-    Write-Warn "No se detectó el puerto $Port a tiempo. Abre manualmente $url cuando esté listo."
-  }
-
-  Write-Info "Para detener el servidor usa el botón '✖ Cancelar' de la UI o cierra su ventana."
-}
-catch {
-  Write-Err $_.Exception.Message
-  Write-Err "Stack:`n$($_.Exception.StackTrace)"
-}
-finally {
-  try { Stop-Transcript | Out-Null } catch {}
-  if ($PauseOnExit) {
-    Write-Host ""
-    Write-Host "Log de esta sesión: $LogPath" -ForegroundColor DarkGray
-    Read-Host "Pulsa ENTER para cerrar esta ventana"
-  }
-}
+Write-Info "Servidor iniciado. Cierra esta ventana cuando no la necesites."
+Pause-IfNeeded
