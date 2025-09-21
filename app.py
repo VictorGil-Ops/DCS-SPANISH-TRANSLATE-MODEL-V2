@@ -573,49 +573,45 @@ INDEX_HTML = r"""
 <head>
   <meta charset="utf-8" />
   <title>DCS Orquestador Traductor (Web) — {{version}}</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; max-width: 980px; margin: 20px auto; }
-    fieldset { margin-bottom: 16px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .row > div { flex: 1; min-width: 280px; }
-    label { display:block; font-weight:600; margin: 8px 0 4px; }
-    input[type=text], select { width:100%; padding:8px; }
-    button { padding:10px 14px; cursor:pointer; }
-    .muted { color:#666; font-size: 12px; }
-    .box { border:1px solid #ddd; padding:10px; border-radius:8px; }
-    .missions { max-height: 260px; overflow:auto; border:1px solid #ddd; padding:8px; border-radius:8px; background:#fafafa; }
-    .progress { height: 12px; background:#eee; border-radius: 8px; overflow:hidden; margin:6px 0 2px; }
-    .progress > div { height:100%; background:#3b82f6; width:0%; transition: width .2s ease; }
-    .badge { display:inline-block; background:#eee; border-radius:6px; padding:2px 6px; margin:2px 4px 2px 0; }
-    .error { color:#b91c1c; } .ok { color:#166534; }
-    .help-btn { margin-left:6px; font-weight:700; color:#2563eb; border:1px solid #2563eb; background:#fff; border-radius:999px; width:22px; height:22px; line-height:20px; text-align:center; cursor:pointer; }
-    .presetbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
-    .presetbar input[type=text]{ max-width: 260px; }
-    .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .modal { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:1000; }
-    .modal.open { display:flex; }
-    .modal-card { background:#fff; width:min(900px, 92vw); max-height:85vh; overflow:auto; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
-    .modal-card header, .modal-card footer { padding:12px 16px; border-bottom:1px solid #eee; }
-    .modal-card footer { border-top:1px solid #eee; border-bottom:none; text-align:right; }
-    .modal-card .content { padding:12px 16px; }
-    .pill { display:inline-block; font-size:12px; padding:2px 6px; border-radius:999px; margin-left:6px; }
-    .pill-green { background:#dcfce7; color:#166534; border:1px solid #86efac; }
-    .pill-amber { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
-    code { background:#f6f6f6; padding:1px 4px; border-radius:4px; }
-    .errbox { border:1px solid #f2b8b5; background:#fff1f0; padding:8px; border-radius:8px; max-height:240px; overflow:auto; }
-    .erritem { margin:6px 0; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:12px; }
-    .ver-badge {
-      display:inline-block;
-      margin-left:8px;
-      font-size:12px;
-      padding:2px 8px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#3730a3;
-      border:1px solid #c7d2fe;
-      vertical-align:middle;
-      }
-  </style>
+<style>
+  /* NUEVO: asegura que el padding y el borde cuenten dentro del 100% */
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; max-width: 980px; margin: 20px auto; }
+  fieldset { margin-bottom: 16px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 280px; }
+  label { display:block; font-weight:600; margin: 8px 0 4px; }
+
+  /* AJUSTADO: ya no se desbordan */
+  input[type=text], select { width:100%; padding:8px; box-sizing: border-box; }
+
+  button { padding:10px 14px; cursor:pointer; }
+  .muted { color:#666; font-size: 12px; }
+  .box { border:1px solid #ddd; padding:10px; border-radius:8px; }
+  .missions { max-height: 260px; overflow:auto; border:1px solid #ddd; padding:8px; border-radius:8px; background:#fafafa; }
+  .progress { height: 12px; background:#eee; border-radius: 8px; overflow:hidden; margin:6px 0 2px; }
+  .progress > div { height:100%; background:#3b82f6; width:0%; transition: width .2s ease; }
+  .badge { display:inline-block; background:#eee; border-radius:6px; padding:2px 6px; margin:2px 4px 2px 0; }
+  .error { color:#b91c1c; } .ok { color:#166534; }
+  .help-btn { margin-left:6px; font-weight:700; color:#2563eb; border:1px solid #2563eb; background:#fff; border-radius:999px; width:22px; height:22px; line-height:20px; text-align:center; cursor:pointer; }
+  .presetbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .presetbar input[type=text]{ max-width: 260px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:1000; }
+  .modal.open { display:flex; }
+  .modal-card { background:#fff; width:min(900px, 92vw); max-height:85vh; overflow:auto; border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+  .modal-card header, .modal-card footer { padding:12px 16px; border-bottom:1px solid #eee; }
+  .modal-card footer { border-top:1px solid #eee; border-bottom:none; text-align:right; }
+  .modal-card .content { padding:12px 16px; }
+  .pill { display:inline-block; font-size:12px; padding:2px 6px; border-radius:999px; margin-left:6px; }
+  .pill-green { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+  .pill-amber { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
+  code { background:#f6f6f6; padding:1px 4px; border-radius:4px; }
+  .errbox { border:1px solid #f2b8b5; background:#fff1f0; padding:8px; border-radius:8px; max-height:240px; overflow:auto; }
+  .erritem { margin:6px 0; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:12px; }
+  .ver-badge { display:inline-block; margin-left:8px; font-size:12px; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; vertical-align:middle; }
+</style>
 </head>
 <body>
 <div class="topbar">
