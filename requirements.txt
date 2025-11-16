@@ -1,5 +1,0 @@
-# Web server/UI
-Flask>=2.3,<4
-
-# HTTP client for LM Studio / APIs
-requests>=2.31,<3

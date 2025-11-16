@@ -1,0 +1,165 @@
+/* ========================= MÓDULO DE AYUDA =========================*/
+
+/* Modal de ayuda con fondo gris opaco */
+#miniModal {
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+/* Card del modal con gradiente gris */
+#miniModal .modal-card {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    border: 1px solid #475569 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Header del modal */
+#miniModal header {
+    border-bottom: 1px solid #64748b !important;
+    color: #f1f5f9 !important;
+}
+
+#miniModal #miniTitle {
+    color: #f1f5f9 !important;
+}
+
+/* Contenido del modal */
+#miniModal #miniContent {
+    color: #e2e8f0 !important;
+    line-height: 1.6 !important;
+}
+
+/* Footer del modal */
+#miniModal footer {
+    border-top: 1px solid #64748b !important;
+}
+
+/* Botón de cerrar */
+#miniModal #miniClose {
+    background: linear-gradient(135deg, #475569 0%, #64748b 100%) !important;
+    color: #f1f5f9 !important;
+    border: 1px solid #64748b !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+#miniModal #miniClose:hover {
+    background: linear-gradient(135deg, #64748b 0%, #78716c 100%) !important;
+    transform: scale(1.05) !important;
+    cursor: pointer !important;
+}
+
+/* Botones de ayuda contextuales */
+.help-button {
+    background: rgba(59, 130, 246, 0.2) !important;
+    border: 1px solid rgba(59, 130, 246, 0.4) !important;
+    color: #60a5fa !important;
+    border-radius: 50% !important;
+    width: 30px !important;
+    height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    z-index: 100 !important;
+    font-size: 14px !important;
+}
+
+.help-button:hover {
+    background: rgba(59, 130, 246, 0.3) !important;
+    transform: scale(1.1) !important;
+}
+
+/* Asegurar que elementos padre tienen position relative */
+.has-help {
+    position: relative !important;
+}
+
+/* Mejorar la visibilidad en diferentes fondos */
+.help-button i {
+    color: #60a5fa !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #miniModal .modal-card {
+        max-width: 95% !important;
+        max-height: 85% !important;
+        margin: 10px !important;
+        padding: 20px !important;
+    }
+    
+    .help-button {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* Estados de animación */
+#miniModal.open {
+    display: flex !important;
+    animation: fadeIn 0.3s ease !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Mejoras de accesibilidad */
+#miniModal:focus-within .modal-card {
+    outline: 2px solid #60a5fa !important;
+    outline-offset: 2px !important;
+}
+
+/* Contenido con formato */
+#miniModal .help-content h3 {
+    color: #60a5fa !important;
+    margin: 1rem 0 0.5rem 0 !important;
+}
+
+#miniModal .help-content ul {
+    margin: 0.5rem 0 !important;
+    padding-left: 1.5rem !important;
+}
+
+#miniModal .help-content li {
+    margin: 0.25rem 0 !important;
+    color: #cbd5e1 !important;
+}
+
+#miniModal .help-content strong {
+    color: #f1f5f9 !important;
+}
+
+/* Scrollbar personalizada para el modal */
+#miniModal .modal-card::-webkit-scrollbar {
+    width: 6px;
+}
+
+#miniModal .modal-card::-webkit-scrollbar-track {
+    background: rgba(71, 85, 105, 0.3);
+    border-radius: 3px;
+}
+
+#miniModal .modal-card::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.7);
+    border-radius: 3px;
+}
+
+#miniModal .modal-card::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 1);
+}

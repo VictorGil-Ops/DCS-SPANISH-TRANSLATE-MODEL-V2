@@ -1,0 +1,171 @@
+{% extends "modern-base.html" %}
+
+{% block title %}Inicio - DCS Traductor Español{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Bienvenida -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <div class="card-icon">🎮</div>
+            <div>
+                <h2 class="card-title">Bienvenido al DCS Traductor Español</h2>
+                <p class="card-subtitle">Traduce campañas de DCS World al español de forma automática, utilizando modelos de IA en LM Studio</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div class="card text-center">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">⚙️</div>
+            <h3 class="card-title mb-2">Orquestador</h3>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                Herramienta principal para traducir campañas
+            </p>
+            <a href="{{ url_for('main.orchestrator') }}" class="btn btn-primary">
+                Iniciar
+            </a>
+        </div>
+
+        <div class="card text-center">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🌍</div>
+            <h3 class="card-title mb-2">Campañas</h3>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                Gestiona tus campañas de DCS World
+            </p>
+            <a href="{{ url_for('main.campaigns') }}" class="btn btn-secondary">
+                Explorar
+            </a>
+        </div>
+
+        <div class="card text-center">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🤖</div>
+            <h3 class="card-title mb-2">Modelos IA</h3>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                Configura modelos y presets
+            </p>
+            <a href="{{ url_for('main.models_presets') }}" class="btn btn-secondary">
+                Configurar
+            </a>
+        </div>
+
+        <div class="card text-center">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📝</div>
+            <h3 class="card-title mb-2">Prompts</h3>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                Personaliza las instrucciones de traducción
+            </p>
+            <a href="{{ url_for('main.prompts') }}" class="btn btn-secondary">
+                Editar
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del sistema -->
+    <div class="grid grid-cols-1 lg:grid-cols-2">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">📊</div>
+                <div>
+                    <h3 class="card-title">Estado del Sistema</h3>
+                    <p class="card-subtitle">Información actual del traductor</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2">
+                <div>
+                    <div class="status-indicator status-success mb-2">
+                        <span>🟢</span>
+                        <span>Sistema activo</span>
+                    </div>
+                    <div class="status-indicator status-info mb-2">
+                        <span>🤖</span>
+                        <span>LM Studio: Verificando...</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-right">
+                        <div style="color: #94a3b8; font-size: 0.875rem;">Versión</div>
+                        <div class="version-badge">{{ version or 'v2.0.0-r2' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">🚀</div>
+                <div>
+                    <h3 class="card-title">Comenzar</h3>
+                    <p class="card-subtitle">Primeros pasos para usar el traductor</p>
+                </div>
+            </div>
+            <div style="color: #94a3b8; font-size: 0.875rem; line-height: 1.6;">
+                <ol style="margin: 0; padding-left: 1.2rem;">
+                    <li>Configura la ruta de DCS World</li>
+                    <li>Conecta con LM Studio</li>
+                    <li>Selecciona una campaña</li>
+                    <li>Inicia la traducción</li>
+                </ol>
+                <div class="mt-4">
+                    <a href="{{ url_for('main.orchestrator') }}" class="btn btn-primary">
+                        ⚙️ Ir al Orquestador
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Características -->
+    <div class="card mt-8">
+        <div class="card-header">
+            <div class="card-icon">✨</div>
+            <div>
+                <h3 class="card-title">Características Principales</h3>
+                <p class="card-subtitle">Lo que puedes hacer con el DCS Traductor Español</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3">
+            <div style="padding: 1rem; border-right: 1px solid rgba(148, 163, 184, 0.1);">
+                <h4 style="color: #60a5fa; margin-bottom: 0.5rem;">🔄 Traducción Automática</h4>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.875rem;">
+                    Traduce campañas completas usando modelos de IA avanzados con alta precisión contextual.
+                </p>
+            </div>
+            <div style="padding: 1rem; border-right: 1px solid rgba(148, 163, 184, 0.1);">
+                <h4 style="color: #4ade80; margin-bottom: 0.5rem;">💾 Sistema de Cache</h4>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.875rem;">
+                    Reutiliza traducciones previas para acelerar el proceso y mantener consistencia.
+                </p>
+            </div>
+            <div style="padding: 1rem;">
+                <h4 style="color: #fbbf24; margin-bottom: 0.5rem;">⚙️ Flujo Completo</h4>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.875rem;">
+                    Extrae, traduce, reempaqueta e instala automáticamente en tu instalación de DCS.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Banner de actualización (oculto por defecto) -->
+<div id="updateBanner" class="hidden">
+    <div class="card" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); margin-top: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div style="color: #fbbf24;">
+                <strong>🎉 Nueva versión disponible:</strong> 
+                <span id="latestVer" style="color: #e2e8f0;"></span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+                <button type="button" id="btnUpdateNow" class="btn btn-primary">Actualizar ahora</button>
+                <a id="updateLink" href="#" target="_blank" rel="noopener" class="btn btn-secondary">Ver en GitHub</a>
+            </div>
+            <span id="updMsg" style="color: #94a3b8; font-size: 0.875rem; width: 100%;"></span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

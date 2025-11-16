@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DCS Traductor Español{% endblock %}</title>
+    
+    <!-- Base URL para resolver URLs relativas correctamente -->
+    <base href="{{ url_for('main.index') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='DCS_SPANISH.ico') }}">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme-extras.css') }}">
+    <!-- CSS forzado para tema oscuro -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/force-dark-theme.css') }}">
+    <!-- CSS para editor de traducciones -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/translation-editor.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <!-- Header principal -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="app-icon">🎮</div>
+                <div>
+                    <h1 class="app-title">DCS Traductor Español</h1>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="version-badge">{{ version or '2.0' }}</span>
+                {% block header_actions %}
+                <button type="button" class="btn btn-secondary" id="openHelp">❓ Ayuda</button>
+                <button type="button" class="btn btn-danger" id="stopServer">🛑 Parar servidor</button>
+                {% endblock %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación -->
+    <nav class="main-nav">
+        <div class="nav-content">
+            <a href="{{ url_for('main.index') }}" class="nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
+                🏠 Inicio
+            </a>
+            <a href="{{ url_for('main.campaigns') }}" class="nav-item {% if request.endpoint == 'main.campaigns' %}active{% endif %}">
+                🌍 Campañas
+            </a>
+            <a href="{{ url_for('main.models_presets') }}" class="nav-item {% if request.endpoint == 'main.models_presets' %}active{% endif %}">
+                🤖 Modelos y Presets
+            </a>
+            <a href="{{ url_for('main.prompts') }}" class="nav-item {% if request.endpoint == 'main.prompts' %}active{% endif %}">
+                📝 Prompts
+            </a>
+            <a href="{{ url_for('main.orchestrator') }}" class="nav-item {% if request.endpoint == 'main.orchestrator' %}active{% endif %}">
+                ⚙️ Orquestador
+            </a>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/modern-theme.js') }}"></script>
+    <!-- JavaScript para forzar tema oscuro -->
+    <script src="{{ url_for('static', filename='js/force-dark-theme.js') }}"></script>
+    <!-- Sistema de ayuda global -->
+        <!-- Script global para el sistema de ayuda ultra robusta -->
+    <script src="{{ url_for('static', filename='js/global-help-ultra.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

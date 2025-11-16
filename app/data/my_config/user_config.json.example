@@ -1,0 +1,15 @@
+{
+  "ROOT_DIR": "",
+  "FILE_TARGET": "l10n/DEFAULT/dictionary",
+  "lm_url": "http://localhost:1234/v1",
+  "DEPLOY_DIR": "",
+  "DEPLOY_OVERWRITE": true,
+  "lm_model": "your-model-name",
+  "arg_config": "3-completions-LLAMA-models.yaml",
+  "arg_compat": "completions",
+  "arg_batch": "4",
+  "arg_timeout": "200",
+  "use_cache": true,
+  "overwrite_cache": false,
+  "active_preset": "1 - Preset Ligero"
+}

@@ -1,0 +1,1400 @@
+{% extends "modern-base.html" %}
+
+{% block title %}Modelos y Presets - DCS Traductor Español{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme-extras.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Encabezado de la página -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Modelos y Presets</h2>
+                <p class="card-subtitle">Los presets son configuraciones predefinidas que optimizan la calidad y velocidad de traducción según tu hardware. Gestiona presets existentes y recomendaciones de modelos según configuración</p>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-outline-success btn-sm" onclick="toggleEditMode()">
+                    <i class="fas fa-edit me-1"></i>
+                    <span id="editModeToggleText">Modo Edición</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="loadPresetsAndModels()">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div id="loading" class="card text-center" style="display: none;">
+        <div class="card-body">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Cargando...</span>
+            </div>
+            <p class="mt-3 mb-0">
+                <i class="fas fa-spinner fa-spin me-2"></i>
+                Cargando presets y modelos...
+            </p>
+        </div>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div id="error" class="alert alert-danger" style="display: none;"></div>
+
+    <!-- Mensaje de éxito -->
+    <div id="success" class="alert alert-success" style="display: none;"></div>
+
+    <!-- Contenedor de presets -->
+    <div id="presets-container"></div>
+</div>
+
+<!-- Modal para editar preset -->
+<div class="modal fade" id="editPresetModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Preset
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="presetForm">
+                    <input type="hidden" id="presetFileName" name="fileName">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="presetName" class="form-label">Nombre del Preset</label>
+                            <input type="text" class="form-control" id="presetName" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="presetBatchSize" class="form-label">Batch Size</label>
+                            <input type="number" class="form-control" id="presetBatchSize" name="batch_size" min="1" max="10" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="presetTimeout" class="form-label">Timeout (segundos)</label>
+                            <input type="number" class="form-control" id="presetTimeout" name="timeout" min="30" max="600" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="presetLmCompat" class="form-label">Compatibilidad LM</label>
+                            <select class="form-control" id="presetLmCompat" name="lm_compat" required>
+                                <option value="completions">Completions</option>
+                                <option value="chat">Chat</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="presetDescription" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="presetDescription" name="description" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="savePreset()">
+                    <i class="fas fa-save me-1"></i>
+                    Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar modelos recomendados -->
+<div class="modal fade" id="editModelsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-robot me-2"></i>
+                    Editar Modelos Recomendados
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="modelsDescription" class="form-label">Descripción de los Modelos</label>
+                    <textarea class="form-control" id="modelsDescription" rows="2"></textarea>
+                </div>
+                <div id="modelsEditor"></div>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-3" onclick="addNewModel()">
+                    <i class="fas fa-plus me-1"></i>
+                    Agregar Modelo
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveModels()">
+                    <i class="fas fa-save me-1"></i>
+                    Guardar Modelos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar un modelo individual -->
+<div class="modal fade" id="editSingleModelModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">✏️ Editar Modelo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="singleModelForm">
+                    <input type="hidden" id="editModelPresetName">
+                    <input type="hidden" id="editModelIndex">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="editModelName" class="form-label">Nombre del Modelo</label>
+                            <input type="text" class="form-control" id="editModelName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="editModelArch" class="form-label">Arquitectura</label>
+                            <input type="text" class="form-control" id="editModelArch" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editModelParams" class="form-label">Parámetros</label>
+                            <input type="text" class="form-control" id="editModelParams" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="editModelPublisher" class="form-label">Publisher</label>
+                            <input type="text" class="form-control" id="editModelPublisher" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editModelLlm" class="form-label">LLM</label>
+                            <input type="text" class="form-control" id="editModelLlm" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="editModelQuant" class="form-label">Quantización</label>
+                            <input type="text" class="form-control" id="editModelQuant" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editModelSize" class="form-label">Tamaño</label>
+                            <input type="text" class="form-control" id="editModelSize" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveSingleModel()">💾 Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar modelo rápido -->
+<div class="modal fade" id="addQuickModelModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">➕ Agregar Nuevo Modelo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickModelForm">
+                    <input type="hidden" id="quickModelPresetName">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="quickModelName" class="form-label">Nombre del Modelo</label>
+                            <input type="text" class="form-control" id="quickModelName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="quickModelArch" class="form-label">Arquitectura</label>
+                            <input type="text" class="form-control" id="quickModelArch" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="quickModelParams" class="form-label">Parámetros</label>
+                            <input type="text" class="form-control" id="quickModelParams" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="quickModelPublisher" class="form-label">Publisher</label>
+                            <input type="text" class="form-control" id="quickModelPublisher" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="quickModelLlm" class="form-label">LLM</label>
+                            <input type="text" class="form-control" id="quickModelLlm" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="quickModelQuant" class="form-label">Quantización</label>
+                            <input type="text" class="form-control" id="quickModelQuant" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="quickModelSize" class="form-label">Tamaño</label>
+                            <input type="text" class="form-control" id="quickModelSize" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="saveQuickModel()">➕ Agregar Modelo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para instrucciones de instalación de modelo -->
+<div class="modal fade" id="modelInstallModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-download me-2"></i>
+                    Cómo Instalar Este Modelo en LM Studio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="model-install-info">
+                    <div class="model-header mb-4">
+                        <h6 class="mb-2"><strong id="modalModelName">Nombre del Modelo</strong></h6>
+                        <div class="model-meta">
+                            <span class="badge bg-primary me-2" id="modalModelPublisher">Publisher</span>
+                            <span class="badge bg-secondary me-2" id="modalModelArch">Arquitectura</span>
+                            <span class="badge bg-success" id="modalModelSize">Tamaño</span>
+                        </div>
+                    </div>
+                    
+                    <div class="install-steps">
+                        <h6><i class="fas fa-list-ol me-2"></i>Pasos para la instalación:</h6>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h6>Abrir LM Studio</h6>
+                                <p class="text-muted">Asegúrate de que LM Studio esté instalado y funcionando en tu sistema.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h6>Ir a la sección de Modelos</h6>
+                                <p class="text-muted">Haz clic en la pestaña <code>🤗</code> (Discover) en la barra lateral izquierda.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h6>Buscar el modelo</h6>
+                                <p class="text-muted">En el cuadro de búsqueda, copia y pega el nombre del modelo:</p>
+                                <div class="code-block">
+                                    <code id="modelNameToCopy" class="selectable-code">Nombre del modelo aparecerá aquí</code>
+                                    <button class="btn btn-outline-primary btn-sm ms-2" onclick="copyModelName()">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h6>Descargar el modelo</h6>
+                                <p class="text-muted">Haz clic en el botón <span class="badge bg-primary">Download</span> junto al modelo que coincida exactamente.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h6>Cargar el modelo</h6>
+                                <p class="text-muted">Una vez descargado, ve a la sección <code>💬</code> (Chat) y carga el modelo en el servidor local.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <h6><i class="fas fa-info-circle me-2"></i>Consejos importantes:</h6>
+                            <ul class="mb-0">
+                                <li>Asegúrate de tener suficiente espacio en disco (<span id="modalRequiredSpace">tamaño</span>)</li>
+                                <li>Los modelos más grandes ofrecen mejor calidad pero requieren más memoria RAM</li>
+                                <li>Una vez cargado, el modelo aparecerá en la lista del orquestador</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Cerrar
+                </button>
+                <a href="https://lmstudio.ai" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>
+                    Descargar LM Studio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let editModeEnabled = false;
+let currentPresetName = '';
+let presetsData = [];
+
+async function loadPresetsAndModels() {
+    const loadingDiv = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+    const presetsContainer = document.getElementById('presets-container');
+    
+    // Mostrar loading
+    loadingDiv.style.display = 'block';
+    errorDiv.style.display = 'none';
+    presetsContainer.innerHTML = '';
+    
+    try {
+        const response = await fetch('/api/models-presets');
+        const data = await response.json();
+        
+        loadingDiv.style.display = 'none';
+        
+        if (!data.ok) {
+            throw new Error(data.error || 'Error desconocido');
+        }
+        
+        presetsData = data.presets;
+        
+        if (data.presets.length === 0) {
+            presetsContainer.innerHTML = `
+                <div class="card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                            </svg>
+                        </div>
+                        <h3 class="empty-state-title">No se encontraron presets</h3>
+                        <p class="empty-state-description">No hay archivos de preset disponibles en el directorio.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Renderizar presets
+        data.presets.forEach(preset => {
+            const presetCard = createPresetCard(preset);
+            presetsContainer.appendChild(presetCard);
+        });
+        
+    } catch (error) {
+        loadingDiv.style.display = 'none';
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = `❌ Error al cargar presets: ${error.message}`;
+        console.error('Error loading presets:', error);
+    }
+}
+
+function getPresetWeightClass(presetName) {
+    if (presetName.toLowerCase().includes('ligero')) {
+        return 'preset-light';
+    } else if (presetName.toLowerCase().includes('balanceado')) {
+        return 'preset-medium';
+    } else if (presetName.toLowerCase().includes('pesado')) {
+        return 'preset-heavy';
+    }
+    return 'preset-medium';
+}
+
+function toggleEditMode() {
+    editModeEnabled = !editModeEnabled;
+    const toggleText = document.getElementById('editModeToggleText');
+    const toggleButton = toggleText.parentElement;
+    
+    if (editModeEnabled) {
+        toggleText.innerHTML = '<i class="fas fa-eye me-1"></i>Modo Vista';
+        toggleButton.className = 'btn btn-outline-danger btn-sm';
+        document.body.classList.add('edit-mode');
+    } else {
+        toggleText.innerHTML = '<i class="fas fa-edit me-1"></i>Modo Edición';
+        toggleButton.className = 'btn btn-outline-success btn-sm';
+        document.body.classList.remove('edit-mode');
+    }
+    
+    // Recargar los presets para mostrar/ocultar botones de edición
+    loadPresetsAndModels();
+}
+
+function createPresetCard(preset) {
+    const card = document.createElement('div');
+    const weightClass = getPresetWeightClass(preset.name);
+    card.className = `card mb-4 ${weightClass}`;
+    
+    const editButtons = editModeEnabled ? `
+        <button class="btn btn-outline-warning btn-sm me-2" onclick="editPreset('${preset.name}')">
+            <i class="fas fa-edit me-1"></i>
+            Editar
+        </button>
+        <button class="btn btn-outline-info btn-sm" onclick="editModels('${preset.name}')">
+            <i class="fas fa-robot me-1"></i>
+            Modelos
+        </button>
+    ` : '';
+    
+    card.innerHTML = `
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-cog"></i>
+            </div>
+            <div>
+                <h3 class="card-title">${preset.name}</h3>
+                <p class="card-subtitle">${preset.description}</p>
+            </div>
+            <div class="card-actions">
+                ${editButtons}
+                <span class="badge bg-primary">${preset.models_recommended.length} modelos</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">Archivo</label>
+                        <span class="info-value">${preset.file}</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">Batch Size</label>
+                        <span class="info-value">${preset.batch_size}</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">Timeout</label>
+                        <span class="info-value">${preset.timeout}s</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">Compatibilidad</label>
+                        <span class="info-value">${preset.lm_compat}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-robot me-2"></i>
+                    Modelos Recomendados
+                </h4>
+                ${editModeEnabled ? `
+                    <button class="btn btn-outline-success btn-sm" onclick="addQuickModel('${preset.name}')">
+                        ➕ Agregar Modelo
+                    </button>
+                ` : ''}
+            </div>
+            ${preset.models_description ? `<p class="text-muted mb-3">${preset.models_description}</p>` : ''}
+            ${createModelsGrid(preset.models_recommended, preset.name)}
+        </div>
+    `;
+    
+    return card;
+}
+
+function createModelsGrid(models, presetName) {
+    if (!models || models.length === 0) {
+        return `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-robot fa-3x text-muted"></i>
+                </div>
+                <h4 class="empty-state-title">Sin modelos</h4>
+                <p class="empty-state-description">No hay modelos recomendados para este preset</p>
+                ${editModeEnabled ? `
+                    <button class="btn btn-outline-primary btn-sm mt-2" onclick="addQuickModel('${presetName}')">
+                        <i class="fas fa-plus me-1"></i>
+                        Agregar Primer Modelo
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    const modelsHtml = models.map((model, index) => `
+        <div class="col-md-6 col-lg-4 mb-3" id="model-${presetName}-${index}">
+            <div class="card h-100 model-card clickable-card" onclick="showModelInstallModal('${model.model_name.replace(/'/g, "\\'")}', '${model.publisher}', '${model.arch}', '${model.size}', event)" style="cursor: pointer;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title" title="${model.model_name}" style="word-wrap: break-word; white-space: normal; line-height: 1.3;">${model.model_name}</h5>
+                        ${editModeEnabled ? `
+                            <div class="model-actions">
+                                <button class="btn btn-sm btn-outline-warning me-1" onclick="event.stopPropagation(); editSingleModel('${presetName}', ${index}, ${JSON.stringify(model).replace(/"/g, '&quot;')})" title="Editar modelo">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteSingleModel('${presetName}', ${index})" title="Eliminar modelo">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="model-specs">
+                        <div class="spec-row">
+                            <span class="spec-label">Arquitectura:</span>
+                            <span class="spec-value">${model.arch}</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Parámetros:</span>
+                            <span class="spec-value">${model.params}</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Publisher:</span>
+                            <span class="spec-value">${model.publisher}</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Quantización:</span>
+                            <span class="spec-value">${model.quant}</span>
+                        </div>
+                        <div class="spec-row">
+                            <span class="spec-label">Tamaño:</span>
+                            <span class="spec-value text-primary font-weight-bold">${model.size}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    return `<div class="row">${modelsHtml}</div>`;
+}
+
+function editPreset(presetName) {
+    const preset = presetsData.find(p => p.name === presetName);
+    if (!preset) return;
+    
+    // Llenar el formulario
+    document.getElementById('presetFileName').value = preset.file;
+    document.getElementById('presetName').value = preset.name;
+    document.getElementById('presetBatchSize').value = preset.batch_size;
+    document.getElementById('presetTimeout').value = preset.timeout;
+    document.getElementById('presetLmCompat').value = preset.lm_compat;
+    document.getElementById('presetDescription').value = preset.description;
+    
+    // Mostrar modal
+    new bootstrap.Modal(document.getElementById('editPresetModal')).show();
+}
+
+async function savePreset() {
+    const form = document.getElementById('presetForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/api/presets/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                fileName: formData.get('fileName'),
+                name: formData.get('name'),
+                description: formData.get('description'),
+                batch_size: parseInt(formData.get('batch_size')),
+                timeout: parseInt(formData.get('timeout')),
+                lm_compat: formData.get('lm_compat')
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('editPresetModal')).hide();
+            showSuccess('✅ Preset guardado exitosamente');
+            loadPresetsAndModels();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`❌ Error al guardar preset: ${error.message}`);
+    }
+}
+
+function editModels(presetName) {
+    currentPresetName = presetName;
+    const preset = presetsData.find(p => p.name === presetName);
+    if (!preset) return;
+    
+    document.getElementById('modelsDescription').value = preset.models_description || '';
+    renderModelsEditor(preset.models_recommended || []);
+    
+    new bootstrap.Modal(document.getElementById('editModelsModal')).show();
+}
+
+function renderModelsEditor(models) {
+    const container = document.getElementById('modelsEditor');
+    container.innerHTML = '';
+    
+    models.forEach((model, index) => {
+        const modelDiv = document.createElement('div');
+        modelDiv.className = 'model-editor-item mb-3 p-3 border rounded';
+        modelDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Modelo ${index + 1}</h6>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeModel(${index})">
+                    <i class="fas fa-trash me-1"></i>
+                    Eliminar
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Nombre del Modelo</label>
+                    <input type="text" class="form-control" name="model_name_${index}" value="${model.model_name}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">Arquitectura</label>
+                    <input type="text" class="form-control" name="arch_${index}" value="${model.arch}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">Parámetros</label>
+                    <input type="text" class="form-control" name="params_${index}" value="${model.params}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">Publisher</label>
+                    <input type="text" class="form-control" name="publisher_${index}" value="${model.publisher}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">LLM</label>
+                    <input type="text" class="form-control" name="llm_${index}" value="${model.llm}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">Quantización</label>
+                    <input type="text" class="form-control" name="quant_${index}" value="${model.quant}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">Tamaño</label>
+                    <input type="text" class="form-control" name="size_${index}" value="${model.size}">
+                </div>
+            </div>
+        `;
+        container.appendChild(modelDiv);
+    });
+}
+
+function addNewModel() {
+    const container = document.getElementById('modelsEditor');
+    const currentModels = container.children.length;
+    
+    const modelDiv = document.createElement('div');
+    modelDiv.className = 'model-editor-item mb-3 p-3 border rounded';
+    modelDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Modelo ${currentModels + 1}</h6>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeModel(${currentModels})">
+                <i class="fas fa-trash me-1"></i>
+                Eliminar
+            </button>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <label class="form-label">Nombre del Modelo</label>
+                <input type="text" class="form-control" name="model_name_${currentModels}" value="">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Arquitectura</label>
+                <input type="text" class="form-control" name="arch_${currentModels}" value="">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Parámetros</label>
+                <input type="text" class="form-control" name="params_${currentModels}" value="">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Publisher</label>
+                <input type="text" class="form-control" name="publisher_${currentModels}" value="">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">LLM</label>
+                <input type="text" class="form-control" name="llm_${currentModels}" value="">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Quantización</label>
+                <input type="text" class="form-control" name="quant_${currentModels}" value="">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Tamaño</label>
+                <input type="text" class="form-control" name="size_${currentModels}" value="">
+            </div>
+        </div>
+    `;
+    container.appendChild(modelDiv);
+}
+
+function removeModel(index) {
+    const container = document.getElementById('modelsEditor');
+    const modelItems = container.getElementsByClassName('model-editor-item');
+    if (modelItems[index]) {
+        modelItems[index].remove();
+    }
+}
+
+async function saveModels() {
+    const container = document.getElementById('modelsEditor');
+    const modelItems = container.getElementsByClassName('model-editor-item');
+    const models = [];
+    
+    for (let i = 0; i < modelItems.length; i++) {
+        const item = modelItems[i];
+        const model = {
+            id: i + 1,
+            model_name: item.querySelector(`[name="model_name_${i}"]`)?.value || '',
+            arch: item.querySelector(`[name="arch_${i}"]`)?.value || '',
+            params: item.querySelector(`[name="params_${i}"]`)?.value || '',
+            publisher: item.querySelector(`[name="publisher_${i}"]`)?.value || '',
+            llm: item.querySelector(`[name="llm_${i}"]`)?.value || '',
+            quant: item.querySelector(`[name="quant_${i}"]`)?.value || '',
+            size: item.querySelector(`[name="size_${i}"]`)?.value || ''
+        };
+        
+        if (model.model_name) {
+            models.push(model);
+        }
+    }
+    
+    try {
+        const response = await fetch('/api/models-presets/save-models', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                preset_name: currentPresetName,
+                description: document.getElementById('modelsDescription').value,
+                models: models
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('editModelsModal')).hide();
+            showSuccess('✅ Modelos guardados exitosamente');
+            loadPresetsAndModels();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`❌ Error al guardar modelos: ${error.message}`);
+    }
+}
+
+function showSuccess(message) {
+    const successDiv = document.getElementById('success');
+    successDiv.textContent = message;
+    successDiv.style.display = 'block';
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 3000);
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Funciones para editar modelos individuales
+function editSingleModel(presetName, modelIndex, modelData) {
+    document.getElementById('editModelPresetName').value = presetName;
+    document.getElementById('editModelIndex').value = modelIndex;
+    
+    document.getElementById('editModelName').value = modelData.model_name;
+    document.getElementById('editModelArch').value = modelData.arch;
+    document.getElementById('editModelParams').value = modelData.params;
+    document.getElementById('editModelPublisher').value = modelData.publisher;
+    document.getElementById('editModelLlm').value = modelData.llm;
+    document.getElementById('editModelQuant').value = modelData.quant;
+    document.getElementById('editModelSize').value = modelData.size;
+    
+    new bootstrap.Modal(document.getElementById('editSingleModelModal')).show();
+}
+
+async function saveSingleModel() {
+    const presetName = document.getElementById('editModelPresetName').value;
+    const modelIndex = parseInt(document.getElementById('editModelIndex').value);
+    
+    const updatedModel = {
+        id: modelIndex + 1,
+        model_name: document.getElementById('editModelName').value,
+        arch: document.getElementById('editModelArch').value,
+        params: document.getElementById('editModelParams').value,
+        publisher: document.getElementById('editModelPublisher').value,
+        llm: document.getElementById('editModelLlm').value,
+        quant: document.getElementById('editModelQuant').value,
+        size: document.getElementById('editModelSize').value
+    };
+    
+    try {
+        // Obtener preset actual
+        const preset = presetsData.find(p => p.name === presetName);
+        if (!preset) throw new Error('Preset no encontrado');
+        
+        // Actualizar el modelo en la lista
+        const updatedModels = [...preset.models_recommended];
+        updatedModels[modelIndex] = updatedModel;
+        
+        const response = await fetch('/api/models-presets/save-models', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                preset_name: presetName,
+                description: preset.models_description || '',
+                models: updatedModels
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('editSingleModelModal')).hide();
+            showSuccess('✅ Modelo actualizado exitosamente');
+            loadPresetsAndModels();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`❌ Error al actualizar modelo: ${error.message}`);
+    }
+}
+
+async function deleteSingleModel(presetName, modelIndex) {
+    if (!confirm('¿Estás seguro de que quieres eliminar este modelo?')) {
+        return;
+    }
+    
+    try {
+        // Obtener preset actual
+        const preset = presetsData.find(p => p.name === presetName);
+        if (!preset) throw new Error('Preset no encontrado');
+        
+        // Eliminar el modelo de la lista
+        const updatedModels = preset.models_recommended.filter((_, index) => index !== modelIndex);
+        
+        // Reindexar los IDs
+        updatedModels.forEach((model, index) => {
+            model.id = index + 1;
+        });
+        
+        const response = await fetch('/api/models-presets/save-models', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                preset_name: presetName,
+                description: preset.models_description || '',
+                models: updatedModels
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            showSuccess('✅ Modelo eliminado exitosamente');
+            loadPresetsAndModels();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`❌ Error al eliminar modelo: ${error.message}`);
+    }
+}
+
+function addQuickModel(presetName) {
+    document.getElementById('quickModelPresetName').value = presetName;
+    
+    // Limpiar formulario
+    document.getElementById('quickModelName').value = '';
+    document.getElementById('quickModelArch').value = '';
+    document.getElementById('quickModelParams').value = '';
+    document.getElementById('quickModelPublisher').value = '';
+    document.getElementById('quickModelLlm').value = '';
+    document.getElementById('quickModelQuant').value = '';
+    document.getElementById('quickModelSize').value = '';
+    
+    new bootstrap.Modal(document.getElementById('addQuickModelModal')).show();
+}
+
+async function saveQuickModel() {
+    const presetName = document.getElementById('quickModelPresetName').value;
+    
+    const newModel = {
+        model_name: document.getElementById('quickModelName').value,
+        arch: document.getElementById('quickModelArch').value,
+        params: document.getElementById('quickModelParams').value,
+        publisher: document.getElementById('quickModelPublisher').value,
+        llm: document.getElementById('quickModelLlm').value,
+        quant: document.getElementById('quickModelQuant').value,
+        size: document.getElementById('quickModelSize').value
+    };
+    
+    // Validar campos requeridos
+    if (!newModel.model_name || !newModel.arch || !newModel.params) {
+        showError('❌ Por favor, completa todos los campos requeridos');
+        return;
+    }
+    
+    try {
+        // Obtener preset actual
+        const preset = presetsData.find(p => p.name === presetName);
+        const currentModels = preset ? preset.models_recommended || [] : [];
+        
+        // Agregar nuevo modelo con ID secuencial
+        newModel.id = currentModels.length + 1;
+        const updatedModels = [...currentModels, newModel];
+        
+        const response = await fetch('/api/models-presets/save-models', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                preset_name: presetName,
+                description: preset ? preset.models_description || '' : '',
+                models: updatedModels
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('addQuickModelModal')).hide();
+            showSuccess('✅ Modelo agregado exitosamente');
+            loadPresetsAndModels();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`❌ Error al agregar modelo: ${error.message}`);
+    }
+}
+
+// Función para mostrar modal de instalación de modelo
+function showModelInstallModal(modelName, publisher, arch, size, event) {
+    // Prevenir propagación del click de edición si está en modo edición
+    if (editModeEnabled) {
+        if (event) event.stopPropagation();
+        return false;
+    }
+    
+    // Prevenir que se ejecute si se hizo click en botones de edición
+    if (event && event.target.closest('.model-actions')) {
+        event.stopPropagation();
+        return false;
+    }
+    
+    // Llenar la información del modelo
+    document.getElementById('modalModelName').textContent = modelName;
+    document.getElementById('modalModelPublisher').textContent = publisher;
+    document.getElementById('modalModelArch').textContent = arch;
+    document.getElementById('modalModelSize').textContent = size;
+    document.getElementById('modelNameToCopy').textContent = modelName;
+    document.getElementById('modalRequiredSpace').textContent = size;
+    
+    // Mostrar modal
+    new bootstrap.Modal(document.getElementById('modelInstallModal')).show();
+    return false;
+}
+
+// Función para copiar nombre del modelo al portapapeles
+function copyModelName() {
+    const modelName = document.getElementById('modelNameToCopy').textContent;
+    navigator.clipboard.writeText(modelName).then(() => {
+        // Cambiar temporalmente el texto del botón
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(() => {
+        // Fallback si no se puede usar clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = modelName;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+        
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+        }, 2000);
+    });
+}
+
+// Cargar presets al iniciar la página
+document.addEventListener('DOMContentLoaded', () => {
+    loadPresetsAndModels();
+});
+</script>
+
+<style>
+.info-item {
+    background: var(--bg-secondary);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.info-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.info-value {
+    display: block;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.model-card {
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.model-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.model-specs {
+    margin-top: 1rem;
+}
+
+.spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.spec-row:last-child {
+    border-bottom: none;
+}
+
+.spec-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.spec-value {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+.card-icon i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.btn i {
+    transition: transform 0.2s ease;
+}
+
+.btn:hover i {
+    transform: scale(1.1);
+}
+
+.empty-state-icon i {
+    opacity: 0.3;
+}
+
+/* Colores según peso del preset */
+.preset-light {
+    border-left: 4px solid #10b981 !important;
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.03), transparent);
+    position: relative;
+}
+
+.preset-light::before {
+    content: '\f0e7';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: rgba(16, 185, 129, 0.3);
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+.preset-light .card-header {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.03));
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.preset-medium {
+    border-left: 4px solid #f59e0b !important;
+    background: linear-gradient(to right, rgba(245, 158, 11, 0.03), transparent);
+    position: relative;
+}
+
+.preset-medium::before {
+    content: '\f4e0';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: rgba(245, 158, 11, 0.3);
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+.preset-medium .card-header {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.03));
+    border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.preset-heavy {
+    border-left: 4px solid #dc2626 !important;
+    background: linear-gradient(to right, rgba(220, 38, 38, 0.03), transparent);
+    position: relative;
+}
+
+.preset-heavy::before {
+    content: '\f5cd';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: rgba(220, 38, 38, 0.3);
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+.preset-heavy .card-header {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(220, 38, 38, 0.03));
+    border-bottom: 1px solid rgba(220, 38, 38, 0.15);
+}
+
+/* Modo edición */
+.edit-mode .card {
+    position: relative;
+    border: 2px dashed rgba(255, 193, 7, 0.3) !important;
+}
+
+.edit-mode .card::after {
+    content: "\f044";
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 10px;
+    right: 45px;
+    background: rgba(255, 193, 7, 0.9);
+    color: #212529;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    z-index: 15;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.model-editor-item {
+    background: var(--bg-secondary);
+}
+
+.model-editor-item:nth-child(even) {
+    background: var(--card-bg);
+}
+
+/* Botones de acción en modelos */
+.model-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.model-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    min-width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.model-card {
+    position: relative;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.model-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.clickable-card:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Estilos para el modal de instalación */
+.model-install-info .model-header {
+    padding: 1rem;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+.model-meta .badge {
+    font-size: 0.75rem;
+}
+
+.install-steps .step {
+    display: flex;
+    margin-bottom: 1.5rem;
+    align-items: flex-start;
+}
+
+.install-steps .step-number {
+    width: 32px;
+    height: 32px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.install-steps .step-content {
+    flex: 1;
+}
+
+.install-steps .step-content h6 {
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.install-steps .step-content p {
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+.code-block {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.selectable-code {
+    background: none;
+    border: none;
+    color: #1f2937;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    user-select: all;
+    flex: 1;
+    word-break: break-all;
+}
+
+/* Mejorar el estilo del título de la tarjeta para nombres largos */
+.model-card .card-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    min-height: 2.6rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Prevenir clicks en modo edición */
+.edit-mode .clickable-card {
+    pointer-events: none;
+}
+
+.edit-mode .model-actions {
+    pointer-events: all;
+}
+</style>
+{% endblock %}

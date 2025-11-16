@@ -1,0 +1,11 @@
+# Web server/UI
+Flask>=2.3,<4
+
+# HTTP client for LM Studio / APIs
+requests>=2.31,<3
+
+# YAML processing for presets and configuration files
+PyYAML>=6.0
+
+# System process management for aggressive cancellation
+psutil>=5.9.0

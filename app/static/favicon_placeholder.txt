@@ -1,0 +1,3 @@
+# Icono para DCS Traductor Español
+# Este archivo ya no es necesario pues se usa DCS_SPANISH.ico
+# Mantener por compatibilidad histórica

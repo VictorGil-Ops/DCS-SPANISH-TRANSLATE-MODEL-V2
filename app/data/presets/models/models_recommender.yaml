@@ -1,0 +1,154 @@
+# MODELOS RECOMENDADOS - SISTEMA SIMPLIFICADO LLAMA/GEMMA
+# Solo modelos Llama y Gemma Instruct en 3 categorías de peso
+# Eliminadas arquitecturas problemáticas (Phi, Qwen, Mistral, etc.)
+
+presets:
+  "Ligero - Equipos Básicos":
+    description: "Modelos Llama/Gemma pequeños (2B-3B) para equipos básicos. Instruct únicamente."
+    hardware_requirements: "4-8GB RAM, iGPU o GPU básica"
+    preset_file: "1-preset-ligero.yaml"
+    prompt_file: "1-instruct-ligero.yaml"
+    supported_architectures: ["Llama3.2", "Gemma2"]
+    models_recommended:
+    
+    # Llama 3.2 - Modelo principal para equipos básicos
+    - arch: "Llama3.2"
+      id: 1
+      llm: "Llama-3.2-3B-Instruct"
+      model_name: "unsloth/Llama-3.2-3B-Instruct-gguf"
+      params: "3B"
+      publisher: "Meta"
+      quant: "Q4_K_M"
+      size: "1.9GB"
+      performance_score: 85
+      quality_score: 92
+      recommended_for: "Modelo principal para hardware básico"
+      preset_optimized: "1-preset-ligero.yaml"
+    
+    # Gemma 2 - Alternativa compacta
+    - arch: "Gemma2"
+      id: 2
+      llm: "gemma-2-2b-it"
+      model_name: "bartowski/gemma-2-2b-it-GGUF"
+      params: "2B"
+      publisher: "Google"
+      quant: "Q4_K_M"
+      size: "1.6GB"
+      performance_score: 88
+      quality_score: 86
+      recommended_for: "Alternativa compacta y eficiente"
+      preset_optimized: "1-preset-ligero.yaml"
+  
+  "Balanceado - Equipos Medios":
+    description: "Modelos Llama/Gemma medianos (8B-9B) para equipos medios. Balance calidad/velocidad óptimo."
+    hardware_requirements: "8-16GB RAM, GTX 1660/RTX 3060 o superior"
+    preset_file: "2-preset-balanceado.yaml"
+    prompt_file: "2-instruct-balanceado.yaml"
+    supported_architectures: ["Llama3.1", "Gemma2"]
+    models_recommended:
+    
+    # Llama 3.1 - Modelo principal para equipos medios
+    - arch: "Llama3.1"
+      id: 1
+      llm: "Llama-3.1-8B-Instruct"
+      model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct-GGUF"
+      params: "8B"
+      publisher: "Meta"
+      quant: "Q4_K_M"
+      size: "4.7GB"
+      performance_score: 85
+      quality_score: 96
+      recommended_for: "Estándar de oro para equipos medios"
+      preset_optimized: "2-preset-balanceado.yaml"
+    
+    # Gemma 2 - Alternativa sólida de Google
+    - arch: "Gemma2"
+      id: 2
+      llm: "gemma-2-9b-it"
+      model_name: "bartowski/gemma-2-9b-it-GGUF"
+      params: "9B"
+      publisher: "Google"
+      quant: "Q4_K_M"
+      size: "5.4GB"
+      performance_score: 83
+      quality_score: 91
+      recommended_for: "Alternativa sólida de Google para equipos medios"
+      preset_optimized: "2-preset-balanceado.yaml"
+  
+  "Pesado - Equipos High-End":
+    description: "Modelos Llama/Gemma grandes (27B-70B) para equipos high-end. Máxima calidad profesional."
+    hardware_requirements: "16GB+ RAM, RTX 4070+/RTX 3080+ o superior"
+    preset_file: "3-preset-pesado.yaml"
+    prompt_file: "3-instruct-pesado.yaml"
+    supported_architectures: ["Llama3.1", "Gemma2"]
+    models_recommended:
+    
+    # Llama 3.1 - Modelo flagship para máxima calidad
+    - arch: "Llama3.1"
+      id: 1
+      llm: "Llama-3.1-70B-Instruct"
+      model_name: "meta-llama/Meta-Llama-3.1-70B-Instruct-GGUF"
+      params: "70B"
+      publisher: "Meta"
+      quant: "Q4_K_M"
+      size: "40GB"
+      performance_score: 60
+      quality_score: 99
+      recommended_for: "Calidad máxima, traducción profesional"
+      preset_optimized: "3-preset-pesado.yaml"
+    
+    # Gemma 2 - Alternativa grande de Google
+    - arch: "Gemma2"
+      id: 2  
+      llm: "gemma-2-27b-it"
+      model_name: "bartowski/gemma-2-27b-it-GGUF" 
+      params: "27B"
+      publisher: "Google"
+      quant: "Q4_K_M"
+      size: "16GB"
+      performance_score: 75
+      quality_score: 97
+      recommended_for: "Alternativa grande y eficiente de Google"
+      preset_optimized: "3-preset-pesado.yaml"
+
+# Arquitecturas eliminadas del sistema simplificado:
+# - Qwen2.5: Problemas de compatibilidad con algunos sistemas
+# - Phi-3/3.5: System content bleeding en traducciones 
+# - Mistral: Inconsistencias en formato JSON
+# - CodeLlama: Especializado en código, no traducción
+# - Mixtral: Complejidad innecesaria para casos de uso
+
+# Beneficios del sistema simplificado:
+# - Solo 2 arquitecturas probadas y estables (Llama + Gemma)
+# - Todas las versiones son Instruct (consistencia)
+# - Eliminación de problemas conocidos
+# - Mantenimiento simplificado
+# - Presets optimizados específicamente para cada tamaño
+
+# Configuración del sistema simplificado:
+system_info:
+  version: "2.0-simplified"
+  supported_architectures: ["Llama3.1", "Llama3.2", "Gemma2"]
+  total_presets: 3
+  total_models: 6 # 2 por cada preset
+  
+  preset_mapping:
+    ligero:
+      models: ["Llama-3.2-3B-Instruct", "gemma-2-2b-it"]
+      hardware: "4-8GB RAM"
+      use_case: "Equipos básicos, traducciones rápidas"
+      
+    balanceado:
+      models: ["Llama-3.1-8B-Instruct", "gemma-2-9b-it"]
+      hardware: "8-16GB RAM"
+      use_case: "Balance calidad/velocidad"
+      
+    pesado:
+      models: ["Llama-3.1-70B-Instruct", "gemma-2-27b-it"]
+      hardware: "16GB+ RAM"
+      use_case: "Máxima calidad profesional"
+
+  fusion_config:
+    priority: "preset > prompt > defaults"
+    description: "Los parámetros lm_api_config del preset tienen precedencia sobre LM_API del prompt"
+    implementation: "_merge_api_config() en translation_engine.py"

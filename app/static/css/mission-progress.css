@@ -1,0 +1,191 @@
+/* CSS para la sección de progreso de misión mejorada */
+
+/* Estilo para la sección de progreso de misión */
+#currentMissionProgressSection {
+    display: block !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+    backdrop-filter: blur(10px);
+}
+
+/* Estilo para el título de la sección */
+#currentMissionProgressSection .progress-title {
+    color: #60a5fa;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Asegura que los elementos internos sean visibles */
+#currentMissionProgressSection .progress-label,
+#currentMissionProgressSection .current-progress-bar,
+#currentMissionProgressSection .batch-details {
+    display: block !important;
+    opacity: 1 !important;
+}
+
+/* Estilo mejorado para la barra de progreso */
+#missionProgressFill {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa) !important;
+    min-width: 2% !important;
+    transition: width 0.3s ease !important;
+    border-radius: 4px;
+}
+
+/* Estilo para cuando la barra está completada */
+#missionProgressFill.completed {
+    background: linear-gradient(90deg, #10b981, #34d399) !important;
+}
+
+/* Resalta los contadores */
+#batchesProgressCounter {
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem;
+}
+
+#cacheHits,
+#modelCalls {
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+}
+
+/* Estilo para los iconos de cache y modelo */
+.batch-details .fas.fa-bolt {
+    color: #f59e0b;
+}
+
+.batch-details .fas.fa-robot {
+    color: #3b82f6;
+}
+
+/* Animación suave para cambios */
+#currentMissionProgressSection * {
+    transition: all 0.2s ease;
+}
+
+/* Estilos para detalles de lotes mejorados */
+.batch-main {
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+}
+
+.batch-breakdown {
+    padding: 4px 8px;
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid #6366f1;
+    margin-top: 4px;
+}
+
+.batch-breakdown small {
+    color: #cbd5e1 !important;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.8rem;
+}
+
+/* Información de LM Studio */
+.lm-studio-info {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 12px;
+}
+
+.lm-studio-info .text-muted {
+    color: #fbbf24 !important;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lm-studio-info .fas.fa-eye {
+    color: #f59e0b;
+}
+
+/* Mejorar el contador de progreso */
+#batchesProgressCounter {
+    background: rgba(59, 130, 246, 0.1) !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    border-left: 3px solid #3b82f6 !important;
+    font-family: 'Consolas', 'Monaco', monospace !important;
+}
+
+/* Controles del progreso */
+.progress-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Botón de limpiar misión */
+.clear-mission-btn {
+    background: rgba(239, 68, 68, 0.8) !important;
+    color: white !important;
+    border: none !important;
+    padding: 4px 6px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 0.8rem !important;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+.clear-mission-btn:hover {
+    opacity: 1 !important;
+    background: rgba(239, 68, 68, 1) !important;
+    transform: scale(1.05);
+}
+
+/* Estilo especial para el contador de tiempo */
+#batchesProgressCounter .timer-highlight {
+    color: #f59e0b !important;
+    font-weight: 700 !important;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-left: 4px;
+}
+
+/* Animación para elementos activos */
+.mission-active {
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    }
+}
+
+/* Mejoras para tiempo real */
+#cacheHits.updating,
+#modelCalls.updating {
+    color: #10b981 !important;
+    font-weight: 700 !important;
+    transition: all 0.3s ease;
+}
+
+#cacheHits.updating::after,
+#modelCalls.updating::after {
+    content: " ↗";
+    color: #10b981;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}

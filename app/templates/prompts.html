@@ -1,0 +1,611 @@
+{% extends "modern-base.html" %}
+
+{% block title %}Gestión de Prompts - DCS Traductor Español{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme-extras.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Encabezado de la página -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Gestión de Prompts</h2>
+                <p class="card-subtitle">Los prompts son instrucciones que guían a la IA sobre cómo traducir texto militar de DCS, definiendo estilo, terminología y contexto específico. Configura y personaliza los prompts de traducción para modelos de IA</p>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-outline-success btn-sm" onclick="toggleEditMode()">
+                    <span id="editModeToggleText"><i class="fas fa-edit"></i> Modo Edición</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="loadPrompts()">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+                <button class="btn btn-outline-info btn-sm" onclick="createNewPrompt()">
+                    <i class="fas fa-plus"></i> Nuevo Prompt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div id="loading" class="card text-center" style="display: none;">
+        <div class="card-body">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Cargando...</span>
+            </div>
+            <p class="mt-3 mb-0"><i class="fas fa-spinner fa-spin"></i> Cargando prompts...</p>
+        </div>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div id="error" class="alert alert-danger" style="display: none;"></div>
+
+    <!-- Mensaje de éxito -->
+    <div id="success" class="alert alert-success" style="display: none;"></div>
+
+    <!-- Contenedor de prompts -->
+    <div id="prompts-container"></div>
+</div>
+
+<!-- Modal para editar prompt -->
+<div class="modal fade" id="editPromptModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit"></i> Editar Prompt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="promptForm">
+                    <input type="hidden" id="promptFileName" name="fileName">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="promptName" class="form-label">Nombre del Prompt</label>
+                            <input type="text" class="form-control" id="promptName" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="promptType" class="form-label">Tipo de Prompt</label>
+                            <select class="form-control" id="promptType" name="type" required>
+                                <option value="completions">Completions</option>
+                                <option value="chat">Chat</option>
+                                <option value="instruct">Instruct</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="promptDescription" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="promptDescription" name="description" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="promptInstructions" class="form-label">Instrucciones LM</label>
+                        <textarea class="form-control font-monospace" id="promptInstructions" name="instructions" rows="20" required></textarea>
+                        <div class="form-text">Instrucciones principales para el modelo de lenguaje</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="savePrompt()">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para crear nuevo prompt -->
+<div class="modal fade" id="newPromptModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Crear Nuevo Prompt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newPromptForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="newPromptName" class="form-label">Nombre del Prompt</label>
+                            <input type="text" class="form-control" id="newPromptName" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="newPromptType" class="form-label">Tipo de Prompt</label>
+                            <select class="form-control" id="newPromptType" name="type" required>
+                                <option value="completions">Completions</option>
+                                <option value="chat">Chat</option>
+                                <option value="instruct">Instruct</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPromptDescription" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="newPromptDescription" name="description" rows="2" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="createPrompt()">
+                    <i class="fas fa-plus"></i> Crear Prompt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let editModeEnabled = false;
+let promptsData = [];
+
+async function loadPrompts() {
+    const loadingDiv = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+    const promptsContainer = document.getElementById('prompts-container');
+    
+    // Mostrar loading
+    loadingDiv.style.display = 'block';
+    errorDiv.style.display = 'none';
+    promptsContainer.innerHTML = '';
+    
+    try {
+        const response = await fetch('/api/prompts');
+        const data = await response.json();
+        
+        loadingDiv.style.display = 'none';
+        
+        if (!data.ok) {
+            throw new Error(data.error || 'Error desconocido');
+        }
+        
+        promptsData = data.prompts;
+        
+        if (data.prompts.length === 0) {
+            promptsContainer.innerHTML = `
+                <div class="card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-file-alt fa-3x"></i>
+                        </div>
+                        <h3 class="empty-state-title">No se encontraron prompts</h3>
+                        <p class="empty-state-description">No hay archivos de prompt disponibles en el directorio.</p>
+                        <button class="btn btn-primary" onclick="createNewPrompt()">
+                            <i class="fas fa-plus"></i> Crear Primer Prompt
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Renderizar prompts
+        data.prompts.forEach(prompt => {
+            const promptCard = createPromptCard(prompt);
+            promptsContainer.appendChild(promptCard);
+        });
+        
+    } catch (error) {
+        loadingDiv.style.display = 'none';
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error al cargar prompts: ${error.message}`;
+        console.error('Error loading prompts:', error);
+    }
+}
+
+function getPromptTypeClass(type) {
+    switch(type?.toLowerCase()) {
+        case 'completions': return 'prompt-completions';
+        case 'chat': return 'prompt-chat';
+        case 'instruct': return 'prompt-instruct';
+        default: return 'prompt-completions';
+    }
+}
+
+function getPromptTypeIcon(type) {
+    switch(type?.toLowerCase()) {
+        case 'completions': return 'fas fa-terminal';
+        case 'chat': return 'fas fa-comments';
+        case 'instruct': return 'fas fa-graduation-cap';
+        default: return 'fas fa-file-alt';
+    }
+}
+
+function toggleEditMode() {
+    editModeEnabled = !editModeEnabled;
+    const toggleText = document.getElementById('editModeToggleText');
+    
+    if (editModeEnabled) {
+        toggleText.innerHTML = '<i class="fas fa-eye"></i> Modo Vista';
+        document.body.classList.add('edit-mode');
+    } else {
+        toggleText.innerHTML = '<i class="fas fa-edit"></i> Modo Edición';
+        document.body.classList.remove('edit-mode');
+    }
+    
+    // Recargar los prompts para mostrar/ocultar botones de edición
+    loadPrompts();
+}
+
+function createPromptCard(prompt) {
+    const card = document.createElement('div');
+    const typeClass = getPromptTypeClass(prompt.type);
+    const typeIcon = getPromptTypeIcon(prompt.type);
+    card.className = `card mb-4 ${typeClass}`;
+    
+    const editButtons = editModeEnabled ? `
+        <button class="btn btn-outline-warning btn-sm me-2" onclick="editPrompt('${prompt.file}')">
+            <i class="fas fa-edit"></i> Editar
+        </button>
+        <button class="btn btn-outline-danger btn-sm" onclick="deletePrompt('${prompt.file}')">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+    ` : '';
+    
+    const truncatedInstructions = prompt.instructions ? 
+        (prompt.instructions.length > 200 ? 
+            prompt.instructions.substring(0, 200) + '...' : 
+            prompt.instructions) : '';
+    
+    card.innerHTML = `
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="${typeIcon}"></i>
+            </div>
+            <div>
+                <h3 class="card-title">${prompt.name}</h3>
+                <p class="card-subtitle">${prompt.description || 'Sin descripción'}</p>
+            </div>
+            <div class="card-actions">
+                ${editButtons}
+                <span class="badge bg-info">${prompt.type || 'completions'}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <label class="info-label">Archivo</label>
+                        <span class="info-value">${prompt.file}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <label class="info-label">Tipo</label>
+                        <span class="info-value">${prompt.type || 'completions'}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h5 class="mb-3"><i class="fas fa-code"></i> Vista Previa de Instrucciones</h5>
+            <div class="prompt-preview">
+                <pre class="prompt-instructions">${truncatedInstructions}</pre>
+                ${prompt.instructions && prompt.instructions.length > 200 ? 
+                    `<button class="btn btn-link btn-sm p-0" onclick="viewFullPrompt('${prompt.file}')">
+                        <i class="fas fa-expand"></i> Ver completo
+                    </button>` : ''}
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+function editPrompt(fileName) {
+    const prompt = promptsData.find(p => p.file === fileName);
+    if (!prompt) return;
+    
+    // Llenar el formulario
+    document.getElementById('promptFileName').value = prompt.file;
+    document.getElementById('promptName').value = prompt.name;
+    document.getElementById('promptType').value = prompt.type || 'completions';
+    document.getElementById('promptDescription').value = prompt.description || '';
+    document.getElementById('promptInstructions').value = prompt.instructions || '';
+    
+    // Mostrar modal
+    new bootstrap.Modal(document.getElementById('editPromptModal')).show();
+}
+
+async function savePrompt() {
+    const form = document.getElementById('promptForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/api/prompts/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                fileName: formData.get('fileName'),
+                name: formData.get('name'),
+                description: formData.get('description'),
+                type: formData.get('type'),
+                instructions: formData.get('instructions')
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('editPromptModal')).hide();
+            showSuccess('<i class="fas fa-check"></i> Prompt guardado exitosamente');
+            loadPrompts();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`<i class="fas fa-exclamation-triangle"></i> Error al guardar prompt: ${error.message}`);
+    }
+}
+
+function createNewPrompt() {
+    // Limpiar formulario
+    document.getElementById('newPromptForm').reset();
+    new bootstrap.Modal(document.getElementById('newPromptModal')).show();
+}
+
+async function createPrompt() {
+    const form = document.getElementById('newPromptForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('/api/prompts/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: formData.get('name'),
+                description: formData.get('description'),
+                type: formData.get('type')
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('newPromptModal')).hide();
+            showSuccess('<i class="fas fa-check"></i> Prompt creado exitosamente');
+            loadPrompts();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`<i class="fas fa-exclamation-triangle"></i> Error al crear prompt: ${error.message}`);
+    }
+}
+
+async function deletePrompt(fileName) {
+    if (!confirm(`¿Estás seguro de que quieres eliminar el prompt "${fileName}"?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/prompts/${encodeURIComponent(fileName)}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+            showSuccess('<i class="fas fa-check"></i> Prompt eliminado exitosamente');
+            loadPrompts();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        showError(`<i class="fas fa-exclamation-triangle"></i> Error al eliminar prompt: ${error.message}`);
+    }
+}
+
+function viewFullPrompt(fileName) {
+    const prompt = promptsData.find(p => p.file === fileName);
+    if (!prompt) return;
+    
+    // Crear modal temporal para mostrar el prompt completo
+    const modalHtml = `
+        <div class="modal fade" id="viewPromptModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-file-alt"></i> ${prompt.name} - Vista Completa
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <pre class="prompt-instructions-full">${prompt.instructions}</pre>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Eliminar modal anterior si existe
+    const existingModal = document.getElementById('viewPromptModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Agregar nuevo modal
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    new bootstrap.Modal(document.getElementById('viewPromptModal')).show();
+}
+
+function showSuccess(message) {
+    const successDiv = document.getElementById('success');
+    successDiv.innerHTML = message;
+    successDiv.style.display = 'block';
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 3000);
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('error');
+    errorDiv.innerHTML = message;
+    errorDiv.style.display = 'block';
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Cargar prompts al iniciar la página
+document.addEventListener('DOMContentLoaded', () => {
+    loadPrompts();
+});
+</script>
+
+<style>
+.info-item {
+    background: var(--bg-secondary);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.info-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.info-value {
+    display: block;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Colores según tipo de prompt */
+.prompt-completions {
+    border-left: 4px solid #3b82f6 !important;
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.02), transparent);
+}
+
+.prompt-completions .card-header {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.prompt-chat {
+    border-left: 4px solid #10b981 !important;
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.02), transparent);
+}
+
+.prompt-chat .card-header {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.prompt-instruct {
+    border-left: 4px solid #f59e0b !important;
+    background: linear-gradient(to right, rgba(245, 158, 11, 0.02), transparent);
+}
+
+.prompt-instruct .card-header {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.prompt-preview {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.prompt-instructions {
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-color);
+}
+
+.prompt-instructions-full {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-color);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Modo edición */
+.edit-mode .card {
+    position: relative;
+}
+
+.edit-mode .card::before {
+    content: "✏️";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 193, 7, 0.9);
+    color: #212529;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    z-index: 10;
+}
+
+.card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    margin-right: 1rem;
+}
+
+.card-icon i {
+    font-size: 1.2rem;
+}
+</style>
+{% endblock %}

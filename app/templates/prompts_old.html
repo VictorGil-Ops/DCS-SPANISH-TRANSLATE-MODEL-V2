@@ -1,0 +1,68 @@
+{% extends "modern-base.html" %}
+
+{% block title %}Prompts - DCS Traductor Español{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Encabezado de la página -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <div class="card-icon">📝</div>
+            <div>
+                <h2 class="card-title">Gestión de Prompts</h2>
+                <p class="card-subtitle">Configura y personaliza los prompts de traducción</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="card">
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+            </div>
+            <h3 class="empty-state-title">Próximamente</h3>
+            <p class="empty-state-description">
+                Esta sección estará disponible en futuras actualizaciones.<br>
+                Aquí podrás gestionar y personalizar los prompts de traducción.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style="max-width: 1000px; margin: 0 auto;">
+                <div class="card" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">
+                    <h4 style="color: #fbbf24; margin-bottom: 0.5rem;">✍️ Editor de Prompts</h4>
+                    <ul style="color: #94a3b8; text-align: left; margin: 0; padding-left: 1.5rem;">
+                        <li>Editor con sintaxis resaltada</li>
+                        <li>Vista previa en tiempo real</li>
+                        <li>Validación automática</li>
+                        <li>Historial de cambios</li>
+                    </ul>
+                </div>
+                <div class="card" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2);">
+                    <h4 style="color: #f87171; margin-bottom: 0.5rem;">🔄 Plantillas</h4>
+                    <ul style="color: #94a3b8; text-align: left; margin: 0; padding-left: 1.5rem;">
+                        <li>Prompts predefinidos</li>
+                        <li>Categorías por dominio</li>
+                        <li>Importar desde comunidad</li>
+                        <li>Compartir configuraciones</li>
+                    </ul>
+                </div>
+                <div class="card" style="background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.2);">
+                    <h4 style="color: #4ade80; margin-bottom: 0.5rem;">🧪 Testing</h4>
+                    <ul style="color: #94a3b8; text-align: left; margin: 0; padding-left: 1.5rem;">
+                        <li>Pruebas de traducción</li>
+                        <li>Métricas de calidad</li>
+                        <li>Comparación de resultados</li>
+                        <li>Optimización automática</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-6">
+                <a href="{{ url_for('main.orchestrator') }}" class="btn btn-primary">
+                    ⚙️ Usar Orquestador
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

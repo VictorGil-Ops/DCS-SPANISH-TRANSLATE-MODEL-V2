@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Error - DCS Spanish Translate{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    {% if error_code %}
+                        Error {{ error_code }}
+                    {% else %}
+                        Error de la aplicación
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-bug fa-4x text-danger"></i>
+                    </div>
+                    <h5 class="card-title text-center">Se ha producido un error</h5>
+                    <p class="card-text text-center text-muted">
+                        {{ error or "Ha ocurrido un error inesperado en la aplicación." }}
+                    </p>
+                    
+                    {% if error_code == 404 %}
+                    <div class="alert alert-warning">
+                        <strong>Sugerencias:</strong>
+                        <ul class="mb-0">
+                            <li>Verifica que la URL esté escrita correctamente</li>
+                            <li>El recurso que buscas puede haber sido movido o eliminado</li>
+                            <li>Intenta navegar desde la página principal</li>
+                        </ul>
+                    </div>
+                    {% elif error_code == 500 %}
+                    <div class="alert alert-danger">
+                        <strong>Error interno del servidor:</strong>
+                        <p class="mb-0">Se ha producido un error en el servidor. El equipo técnico ha sido notificado.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Volver al inicio
+                        </a>
+                        <button onclick="history.back()" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver atrás
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

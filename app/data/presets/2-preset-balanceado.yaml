@@ -1,0 +1,60 @@
+# PRESET BALANCEADO - EQUIPOS MEDIOS
+# Optimizado para: 8-16GB RAM, GPU dedicada básica (GTX 1660/RTX 3060), CPU medio
+# Modelos recomendados: Llama-3.1-8B-Instruct, gemma-2-9b-it
+
+name: "Balanceado - Equipos Medios"
+description: "Configuración equilibrada entre velocidad y calidad. Solo Llama y Gemma instruct medianos."
+weight: "balanceado"
+hardware_profile: "medio"
+supported_models:
+  llama: "Llama-3.1-8B-Instruct"
+  gemma: "gemma-2-9b-it"
+
+# Configuración de procesamiento
+batch_size: 4                    # Lotes medianos optimizados para modelos 8B-9B
+timeout: 240                     # Timeout incrementado para modelos más grandes
+max_concurrent_requests: 2       # Dos peticiones simultáneas
+context_window: 4096            # Ventana de contexto amplia
+
+# Configuración LM optimizada para modelos medios instruct
+lm_compat: "completions"
+config: "2-instruct-balanceado.yaml"  # Prompt optimizado para Llama/Gemma medianos
+
+# Parámetros del modelo
+lm_api_config:
+  temperature: 0.2              # Temperatura moderada para balance creatividad/consistencia
+  top_p: 0.9                    # Sampling estándar
+  top_k: 40                     # Balance entre diversidad y relevancia
+  max_tokens: 2048              # Tokens generosos para respuestas completas
+  repetition_penalty: 1.15      # Penalización moderada de repetición
+  presence_penalty: 0.1         # Penalización estándar de presencia
+  frequency_penalty: 0.1        # Penalización estándar de frecuencia
+  
+# Optimizaciones de rendimiento
+performance:
+  enable_caching: true          # Cache inteligente
+  cache_ttl: 43200             # Cache válido 12 horas
+  retry_attempts: 3            # Reintentos moderados
+  retry_delay: 3               # Delay rápido entre reintentos
+  memory_optimization: true     # Optimizaciones balanceadas
+  parallel_processing: true     # Procesamiento en paralelo limitado
+  
+# Arquitecturas compatibles (orden de preferencia)
+compatible_architectures:
+  - "llama3.1"                 # Excelente balance calidad/velocidad
+  - "qwen2.5"                  # Muy eficiente para tamaño medio
+  - "phi-3.5"                  # Optimizado para productividad
+  - "mistral"                  # Buen rendimiento general
+  - "gemma2"                   # Alternativa sólida
+  
+# Límites de seguridad
+safety_limits:
+  max_memory_usage: "12GB"     # Límite de memoria generoso
+  max_gpu_memory: "8GB"        # Límite GPU para tarjetas medias
+  max_processing_time: 600     # 10 minutos máximo por archivo
+  
+# Configuración avanzada
+advanced:
+  dynamic_batching: true       # Ajuste dinámico de lotes
+  load_balancing: true        # Balance de carga entre recursos
+  quality_monitoring: true    # Monitoreo de calidad de traducción

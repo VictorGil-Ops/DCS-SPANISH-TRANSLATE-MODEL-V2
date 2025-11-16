@@ -1,0 +1,192 @@
+{% extends "modern-base.html" %}
+
+{% block title %}Inicio - DCS Traductor Español{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Bienvenida -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <div class="card-icon">🎮</div>
+            <div>
+                <h2 class="card-title">Bienvenido al DCS Traductor Español</h2>
+                <p class="card-subtitle">Traduce campañas de DCS World al español de forma automática</p>
+            </div>
+        </div>
+    </div>
+
+<!-- Banner de actualización -->
+<div id="updateBanner" style="display:none; margin:8px 0 0 0;">
+  <div style="border:1px solid #fde68a; background:#fffbeb; color:#92400e; padding:8px 10px; border-radius:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <div><strong>Nueva versión disponible:</strong> <span id="latestVer"></span></div>
+    <button type="button" id="btnUpdateNow">Actualizar ahora</button>
+    <a id="updateLink" href="#" target="_blank" rel="noopener">Ver en GitHub</a>
+    <span id="updMsg" class="muted"></span>
+  </div>
+</div>
+
+<form id="cfg">
+  <fieldset class="box">
+    <legend>Configuración</legend>
+
+    <!-- Presets -->
+    <div class="presetbar">
+      <label>Presets</label>
+      <button type="button" class="help-btn" data-help="presets">?</button>
+      <select id="presetList"></select>
+      <button type="button" id="btnLoadPreset">Cargar</button>
+      <button type="button" id="btnDeletePreset">Borrar</button>
+      <span style="flex:1"></span>
+      <input type="text" id="presetName" placeholder="Nombre del preset…" />
+      <button type="button" id="btnSavePreset">Guardar preset</button>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <div>
+        <label>
+          ROOT_DIR
+          <button type="button" class="help-btn" data-help="rootdir">?</button>
+        </label>
+        <div class="row" style="align-items:flex-end; gap:8px;">
+          <input type="text" id="dcsPath" placeholder="D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns" required />
+          <button type="button" id="btnAutoScan">🔍 Detectar</button>
+        </div>
+        <div class="muted" id="autoRootMsg"></div>
+      </div>
+      <div>
+        <label>
+          FILE_TARGET
+          <button type="button" class="help-btn" data-help="file_target">?</button>
+        </label>
+        <input type="text" id="fileTarget" value="l10n/DEFAULT/dictionary" required />
+      </div>
+    </div>
+
+    <!-- Parámetros del modelo -->
+    <fieldset class="box" style="background:#fcfcfc">
+      <legend>Parámetros del modelo (ARGS)
+        <button type="button" class="help-btn" data-help="args">?</button>
+      </legend>
+      <div class="row">
+        <div>
+          <label>--config (PROMTS)</label>
+          <select id="promptFile"></select>
+        </div>
+        <div>
+          <label>--lm-compat</label>
+          <select id="lmCompat">
+            <option value="completions" selected>completions</option>
+            <option value="chat">chat</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>--batch-size</label>
+          <input type="number" id="batchSize" value="4" min="1" max="10" />
+        </div>
+        <div>
+          <label>--timeout (s)</label>
+          <input type="number" id="timeout" value="200" min="30" max="600" />
+        </div>
+      </div>
+
+      <label>--lm-model</label>
+      <div style="max-width: 620px;">
+        <select id="lmModel">
+          <option value="">Seleccione un modelo...</option>
+        </select>
+        <div class="muted" id="lmModelsHint"></div>
+        <button type="button" id="btnScanModels" style="margin-top:6px;">🔄 Escanear LM Studio</button>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <div style="flex:1; min-width:220px;">
+          <label>--lm-url</label>
+          <input type="text" id="lmUrl" value="http://localhost:1234/v1" />
+          <div class="muted">Ej.: http://localhost:1234/v1</div>
+        </div>
+        <div>
+          <label>Concurrencia</label>
+          <input type="number" id="maxConcurrent" value="2" min="1" max="5" />
+        </div>
+      </div>
+
+      <div class="muted" id="argsPreview">(preview de ARGS)</div>
+    </fieldset>
+
+    <div class="row" style="margin-top:8px;">
+      <div>
+        <label>
+          DEPLOY_DIR (opcional)
+          <button type="button" class="help-btn" data-help="deploy_dir">?</button>
+        </label>
+        <input type="text" id="deployDir" placeholder="D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns" />
+      </div>
+      <div>
+        <label>
+          DEPLOY_OVERWRITE
+          <button type="button" class="help-btn" data-help="deploy_overwrite">?</button>
+        </label>
+        <select id="deployOverwrite">
+          <option value="false" selected>false</option>
+          <option value="true">true</option>
+        </select>
+      </div>
+    </div>
+    <div class="muted">Logs: log_orquestador/ (se genera un ZIP por campaña al finalizar).</div>
+  </fieldset>
+
+  <fieldset class="box">
+    <legend>Campañas y Misiones</legend>
+    <div class="row">
+      <div>
+        <button type="button" id="btnScanCampaigns">🔍 Escanear campañas</button>
+        <div id="campaignsList" class="missions" aria-label="Campañas detectadas"></div>
+      </div>
+      <div>
+        <div>
+          <label title="Incluye misiones de Flaming Cliffs (-FC-) en la lista">
+            <input type="checkbox" id="include_fc" /> Incluir misiones -FC- (Flaming Cliffs)
+            <button type="button" class="help-btn" data-help="fc">?</button>
+          </label>
+        </div>
+        <div id="missionsList" class="missions" aria-label="Misiones disponibles"></div>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="box">
+    <legend>Modo
+      <button type="button" class="help-btn" data-help="mode">?</button>
+    </legend>
+    <label><input type="radio" name="mode" value="translate" checked /> translate</label>
+    <label><input type="radio" name="mode" value="miz" /> miz</label>
+    <label><input type="radio" name="mode" value="all" /> all</label>
+    <label><input type="radio" name="mode" value="deploy" /> deploy</label>
+  </fieldset>
+
+  <div class="row">
+    <div><button type="button" id="btnRun" class="primary">▶ Ejecutar</button></div>
+    <div><button type="button" id="btnCancel" style="display:none;">✖ Cancelar</button></div>
+  </div>
+</form>
+
+<hr/>
+<h3>Estado</h3>
+<div id="status" class="box">
+  <div>Fase: <b id="phase">-</b></div>
+  <div>Detalle: <span id="detail">-</span></div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div><span id="pct">0%</span></div>
+  <div id="msg" style="margin-top:6px;"></div>
+  <div style="margin-top:10px;">
+    <strong>Errores recientes</strong>
+    <div class="errbox" id="errList" aria-live="polite"></div>
+  </div>
+</div>
+
+{% include 'modals.html' %}
+
+{% endblock %}

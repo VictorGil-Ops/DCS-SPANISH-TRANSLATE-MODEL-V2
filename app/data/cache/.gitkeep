@@ -1,0 +1,2 @@
+# Esta carpeta contiene archivos de cache que no deben ser versionados
+# Este archivo .gitkeep permite que la carpeta exista en Git sin contenido

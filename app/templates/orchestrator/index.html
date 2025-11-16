@@ -1,0 +1,1997 @@
+{% extends "modern-base.html" %}
+
+{% block title %}Orquestador - DCS Traductor Español{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme-extras.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orchestrator.css') }}?v=20251104_fixed_white_bg">
+<!-- CSS para la sección de progreso de misión -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mission-progress.css') }}?v=completed_state_20251114">
+<!-- CSS para el módulo de ayuda -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/help-module.css') }}?v=grey_modal_20251126">
+    <style>
+    /* Homogenización de estilos - Sistema de diseño unificado */
+    
+    /* Variables CSS para consistencia */
+    :root {
+        --color-primary: #3b82f6;
+        --color-primary-light: #60a5fa;
+        --color-success: #10b981;
+        --color-warning: #f59e0b;
+        --color-danger: #ef4444;
+        --bg-primary: rgba(15, 23, 42, 0.9);
+        --bg-secondary: rgba(30, 41, 59, 0.8);
+        --bg-tertiary: rgba(51, 65, 85, 0.6);
+        --border-primary: rgba(148, 163, 184, 0.2);
+        --border-light: rgba(148, 163, 184, 0.1);
+        --text-primary: #e2e8f0;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --text-dark: #64748b;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+        --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+        --transition: all 0.2s ease;
+    }
+    
+    /* Layout de estadísticas unificado */
+    .execution-stats .stat-card,
+    .cache-stats-grid .cache-stat-card {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+    }
+    
+    .stat-card:hover,
+    .cache-stat-card:hover {
+        background: var(--bg-secondary);
+        border-color: var(--color-primary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .stat-card .stat-label,
+    .cache-stat-card .cache-stat-label {
+        order: 1;
+        text-align: left;
+        margin: 0;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .stat-card .stat-number,
+    .cache-stat-card .cache-stat-number {
+        order: 2;
+        text-align: right;
+        margin: 0;
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+    
+    /* Ocultar topbar original */
+    .orchestrator-topbar {
+        display: none;
+    }
+    
+    /* Componentes comunes */
+    .pill {
+        color: inherit;
+        background: var(--bg-tertiary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: 999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: 1px solid var(--border-primary);
+    }
+    
+    /* Sistema de progreso unificado */
+    .current-progress-content {
+        padding: var(--spacing-lg);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+    }
+    
+    .current-execution-header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .current-phase {
+        font-weight: 600;
+        font-size: 1.1em;
+        color: var(--color-primary-light);
+    }
+    
+    .current-progress-bar {
+        position: relative;
+        height: 24px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--color-primary), #06b6d4);
+        transition: width 0.3s ease;
+        border-radius: var(--radius-lg);
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.8em;
+        font-weight: 600;
+        color: white;
+        text-shadow: var(--shadow-sm);
+    }
+    
+    .current-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+        padding: var(--spacing-md);
+        background: var(--bg-primary);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+    }
+    
+    .current-campaign, .current-mission {
+        color: var(--text-primary);
+    }
+    
+    .current-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--spacing-md);
+    }
+    
+    .current-stat-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--spacing-md);
+        background: var(--bg-primary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+    }
+    
+    .current-stat-card:hover {
+        background: var(--bg-secondary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .current-stat-label {
+        font-size: 0.8em;
+        color: var(--text-muted);
+        margin-bottom: var(--spacing-sm);
+        font-weight: 500;
+    }
+    
+    .current-stat-number {
+        font-size: 1.4em;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .current-stat-number.success {
+        color: var(--color-success);
+    }
+    
+    .current-stat-number.error {
+        color: var(--color-danger);
+    }
+    
+    /* Secciones de configuración unificadas */
+    .config-section {
+        background: transparent;
+    }
+    
+    .config-section .row {
+        background: transparent;
+        margin-bottom: var(--spacing-md);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-md);
+        align-items: end;
+    }
+    
+    .config-section label {
+        color: var(--text-primary);
+        font-weight: 500;
+        margin-bottom: var(--spacing-sm);
+        display: block;
+    }
+    
+    /* Estados y mensajes */
+    .validation-status,
+    .status-message {
+        background: transparent;
+        color: var(--text-muted);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+    }
+    
+    .checkbox-label {
+        color: var(--text-primary);
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    /* Sistema de formularios unificado */
+    input[type="text"],
+    input[type="url"], 
+    input[type="number"],
+    select,
+    textarea {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        transition: var(--transition);
+        width: 100%;
+    }
+    
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+    
+    input[type="checkbox"] {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        width: 18px;
+        height: 18px;
+        accent-color: var(--color-primary);
+        border-radius: var(--radius-sm);
+    }
+    
+    /* Fieldsets y leyendas */
+    fieldset.box {
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border-light) !important;
+        color: var(--text-primary) !important;
+        padding: var(--spacing-lg) !important;
+        border-radius: var(--radius-lg) !important;
+        margin-bottom: var(--spacing-lg) !important;
+    }
+    
+    fieldset legend {
+        color: var(--text-primary);
+        background: var(--bg-secondary);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-light);
+        font-weight: 600;
+    }
+    
+    /* Botones de ayuda unificados */
+    .help-btn {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--color-primary-light);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-left: var(--spacing-sm);
+    }
+    
+    .help-btn:hover {
+        background: rgba(59, 130, 246, 0.3);
+        transform: scale(1.05);
+    }
+    
+    /* Sistema de botones unificado */
+    button {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-primary);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--transition);
+        font-weight: 500;
+    }
+    
+    button:hover {
+        background: var(--bg-secondary);
+        border-color: var(--color-primary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    button.primary,
+    button[type="submit"] {
+        background: linear-gradient(135deg, var(--color-primary), #2563eb);
+        color: white;
+        border-color: var(--color-primary);
+    }
+    
+    button.secondary {
+        background: var(--bg-secondary);
+        border-color: var(--border-primary);
+    }
+    
+    button.danger {
+        background: linear-gradient(135deg, var(--color-danger), #dc2626);
+        color: white;
+        border-color: var(--color-danger);
+    }
+    
+    /* Sistema de Cards unificado */
+    .card {
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border-light) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: var(--spacing-lg) !important;
+        margin-bottom: var(--spacing-lg) !important;
+        box-shadow: var(--shadow-md) !important;
+        transition: var(--transition) !important;
+    }
+    
+    .card:hover {
+        border-color: var(--border-primary);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .card h3 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+        font-weight: 600;
+    }
+    
+    .card input::placeholder {
+        color: var(--text-dark);
+    }
+    
+    .card select option {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+    }
+    
+    /* Layout responsivo para campos */
+    .field-with-button {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: stretch;
+        width: 100%;
+    }
+    
+    .field-with-button input {
+        flex: 1;
+    }
+    
+    .field-with-button button {
+        white-space: nowrap;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md) var(--spacing-lg);
+        min-width: max-content;
+    }
+    
+    /* Elementos de lista y misiones */
+    #campaigns, #missions {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .muted {
+        color: var(--text-muted);
+    }
+    
+    /* Modo de trabajo mejorado */
+    .mode-option {
+        color: var(--text-primary);
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    
+    .mode-option:hover {
+        background: var(--bg-secondary);
+        border-color: var(--color-primary);
+    }
+    
+    .mode-label {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .mode-desc {
+        color: var(--text-muted);
+        font-size: 0.9em;
+    }
+    
+    .mode-counter {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: var(--color-primary-light);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        font-size: 0.85em;
+    }
+    
+    /* Opciones de traducción */
+    .translation-options {
+        background: transparent;
+    }
+    
+    .checkbox-option {
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: var(--spacing-md);
+        background: var(--bg-primary);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-sm);
+        transition: var(--transition);
+    }
+    
+    .checkbox-option:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .checkbox-option input[type="checkbox"] {
+        margin-right: var(--spacing-sm);
+    }
+    
+    .option-desc {
+        color: var(--text-muted);
+        font-size: 0.9em;
+        margin-top: var(--spacing-sm);
+    }
+    
+    /* Presets bar integrado en card */
+    .presetbar {
+        background: transparent;
+        padding: var(--spacing-md) 0;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+    
+    .presetbar label {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    /* Campos de argumentos */
+    #arg_config, #arg_compat, #arg_batch, #arg_timeout {
+        font-family: 'Courier New', monospace !important;
+        font-size: 0.9em !important;
+    }
+    
+    /* Preview de argumentos */
+    #argsPreview {
+        font-family: 'Courier New', monospace !important;
+        font-size: 0.85em !important;
+        background: rgba(15, 23, 42, 0.9) !important;
+        padding: 0.5rem !important;
+        border-radius: 4px !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Mejorar contraste en elementos de estado y resumen */
+    .empty-state {
+        background: rgba(15, 23, 42, 0.8) !important;
+        color: #e2e8f0 !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        border-radius: 8px !important;
+        padding: 2rem !important;
+    }
+    
+    .empty-icon {
+        color: #94a3b8 !important;
+        font-size: 3rem !important;
+    }
+    
+    .empty-text {
+        color: #cbd5e1 !important;
+    }
+    
+    /* Mejorar elementos de misiones y campañas */
+    .missions-table {
+        background: rgba(15, 23, 42, 0.9) !important;
+        color: #e2e8f0 !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    }
+    
+    .missions-table th {
+        background: rgba(30, 41, 59, 0.9) !important;
+        color: #f1f5f9 !important;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+    
+    .missions-table td {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Mejorar elementos de modo de trabajo */
+    .mode-counter {
+        background: rgba(15, 23, 42, 0.9) !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Mejorar execution-header */
+    .execution-header {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .execution-info {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .execution-status {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .execution-mode, .execution-time, .execution-date {
+        color: #e2e8f0 !important;
+    }
+    
+    .mode-badge, .time-label, .time-value, .date-label, .date-value {
+        color: #e2e8f0 !important;
+    }
+    
+    .status-indicator, .status-text {
+        color: #e2e8f0 !important;
+    }
+    
+    /* Mejorar cache-stats */
+    .cache-stats {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        margin: 1rem 0 !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .cache-stats h4 {
+        color: #f1f5f9 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Mejorar missions-detail */
+    .missions-detail {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        margin: 1rem 0 !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .missions-detail h4 {
+        color: #f1f5f9 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .missions-table-container {
+        background: transparent !important;
+    }
+    
+    /* Mejorar errors-section */
+    .errors-section {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        margin: 1rem 0 !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .errors-section h4 {
+        color: #fca5a5 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .errors-list {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Arreglar executionMode específicamente */
+    .execution-mode .mode-badge,
+    #executionMode {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+        padding: 0.25rem 0.75rem !important;
+        border-radius: 9999px !important;
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    }
+    
+    /* Arreglar hover en tabla de misiones */
+    .missions-table tr:hover,
+    .missions-table tbody tr:hover {
+        background: rgba(30, 41, 59, 0.7) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .missions-table tr:hover td,
+    .missions-table tbody tr:hover td {
+        color: #e2e8f0 !important;
+        background: transparent !important;
+    }
+    
+    /* Asegurar que todos los elementos de texto en execution mantienen color */
+    .execution-header * {
+        color: #e2e8f0 !important;
+    }
+    
+    .execution-info * {
+        color: #e2e8f0 !important;
+    }
+    
+    .execution-status * {
+        color: #e2e8f0 !important;
+    }
+    
+    /* Prevenir que elementos cambien a blanco */
+    .missions-table a,
+    .missions-table span,
+    .missions-table div {
+        color: #e2e8f0 !important;
+    }
+    
+    .missions-table a:hover {
+        color: #60a5fa !important;
+    }
+    
+    /* Arreglar etiquetas de estado en tabla de misiones */
+    .missions-table .status-badge,
+    .missions-table .pill,
+    .missions-table .badge {
+        background: rgba(15, 23, 42, 0.9) !important;
+        color: #e2e8f0 !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+        padding: 0.25rem 0.5rem !important;
+        border-radius: 4px !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Colores específicos para diferentes estados */
+    .missions-table .status-success,
+    .missions-table .badge-success {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #011809 !important;
+        border-color: rgba(0, 2, 1, 0.3) !important;
+    }
+    
+    .missions-table .status-error,
+    .missions-table .badge-error {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #f87171 !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+    }
+    
+    .missions-table .status-warning,
+    .missions-table .badge-warning {
+        background: rgba(245, 158, 11, 0.2) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    
+    .missions-table .status-info,
+    .missions-table .badge-info {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+        border-color: rgba(59, 130, 246, 0.3) !important;
+    }
+    
+    /* Asegurar que las etiquetas no cambien al hover */
+    .missions-table tr:hover .status-badge,
+    .missions-table tr:hover .pill,
+    .missions-table tr:hover .badge {
+        background: rgba(15, 23, 42, 0.9) !important;
+        color: #e2e8f0 !important;
+    }
+    
+    .missions-table tr:hover .status-success,
+    .missions-table tr:hover .badge-success {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #14532d !important;
+    }
+    
+    .missions-table tr:hover .status-error,
+    .missions-table tr:hover .badge-error {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #f87171 !important;
+    }
+    
+    .missions-table tr:hover .status-warning,
+    .missions-table tr:hover .badge-warning {
+        background: rgba(245, 158, 11, 0.2) !important;
+        color: #fbbf24 !important;
+    }
+    
+    .missions-table tr:hover .status-info,
+    .missions-table tr:hover .badge-info {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+    }
+    
+    /* Estilo específico para conteo de errores en cero */
+    .missions-table .error-count-zero,
+    .missions-table td[data-errors="0"],
+    .missions-table .zero-errors {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #14532d !important;
+        border: 1px solid rgba(34, 197, 94, 0.3) !important;
+        padding: 0.25rem 0.5rem !important;
+        border-radius: 4px !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .missions-table tr:hover .error-count-zero,
+    .missions-table tr:hover td[data-errors="0"],
+    .missions-table tr:hover .zero-errors {
+        background: rgba(34, 197, 94, 0.2) !important;
+        color: #14532d !important;
+    }
+    
+    /* Estilos específicos para elementos dentro de missionsTableBody */
+    #missionsTableBody .status-success,
+    #missionsTableBody .badge-success,
+    #missionsTableBody .error-count-zero,
+    #missionsTableBody .zero-errors {
+        background: rgba(34, 197, 94, 0.3) !important;
+        color: #14532d !important;
+        border: 1px solid rgba(34, 197, 94, 0.4) !important;
+        font-weight: 700 !important;
+    }
+    
+    #missionsTableBody tr:hover .status-success,
+    #missionsTableBody tr:hover .badge-success,
+    #missionsTableBody tr:hover .error-count-zero,
+    #missionsTableBody tr:hover .zero-errors {
+        background: rgba(34, 197, 94, 0.3);
+        color: #14532d;
+    }
+    
+    /* Headers de card unificados */
+    .card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--border-light);
+    }
+    
+    .card-icon {
+        font-size: 1.5rem;
+        color: var(--color-primary-light);
+    }
+    
+    .card-title {
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .card-subtitle {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin: 0;
+        margin-top: var(--spacing-sm);
+    }
+    
+    /* Actualizar cache-stats y missions-detail */
+    .cache-stats {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-lg);
+        margin: var(--spacing-md) 0;
+        color: var(--text-primary);
+    }
+    
+    .cache-stats h4 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-sm);
+        font-weight: 600;
+    }
+    
+    .missions-detail {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-lg);
+        margin: var(--spacing-md) 0;
+        color: var(--text-primary);
+    }
+    
+    .missions-detail h4 {
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-sm);
+        font-weight: 600;
+    }
+    
+    /* Sección de errores mejorada */
+    .errors-section {
+        background: var(--bg-secondary);
+        border: 1px solid var(--color-danger);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-lg);
+        margin: var(--spacing-md) 0;
+        color: var(--text-primary);
+    }
+    
+    .errors-section h4 {
+        color: var(--color-danger);
+        margin-bottom: var(--spacing-sm);
+        font-weight: 600;
+    }
+    
+    /* Eliminar fondos blancos - Force Dark Theme Override Bootstrap */
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+    
+    /* Elementos que NO deben tener background */
+    div:not(.card):not(.btn):not(.badge):not(.progress-fill):not(.current-stat-card):not(.stat-card):not(.cache-stat-card), 
+    span:not(.badge):not(.pill), 
+    section, 
+    header:not(.main-header), 
+    main, 
+    form:not(.card) {
+        background: transparent !important;
+    }
+    
+    body, html {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        color: var(--text-primary) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Bootstrap Override - Force Dark Theme */
+    .container, .container-fluid, .container-sm, .container-md, .container-lg, .container-xl, .container-xxl {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .row, [class*="col-"] {
+        background: transparent !important;
+        color: inherit !important;
+    }
+    
+    /* Bootstrap components override */
+    .d-flex, .align-items-center, .justify-content-between, .mb-0, .mb-3, .mb-4, .mb-6, 
+    .text-end, .text-muted, .gap-2, .fade-in {
+        background: transparent !important;
+        color: inherit !important;
+    }
+    
+    /* Ensure no white backgrounds anywhere */
+    .orchestrator-header, .orchestrator-stats {
+        background: transparent !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .container-fluid, .container, .row, .col, .col-md-6, .col-md-4, .col-12 {
+        background: transparent !important;
+    }
+    
+    .fade-in, .orchestrator-header, .orchestrator-stats {
+        background: transparent !important;
+    }
+    
+    /* Badges y elementos de estado */
+    .badge {
+        background: var(--bg-tertiary) !important;
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary) !important;
+    }
+    
+    .badge.bg-success {
+        background: var(--color-success) !important;
+        color: white !important;
+    }
+    
+    .badge.bg-info {
+        background: var(--color-primary) !important;
+        color: white !important;
+    }
+    
+    .badge.bg-warning {
+        background: var(--color-warning) !important;
+        color: white !important;
+    }
+    
+    /* Elementos específicos que pueden tener fondo blanco */
+    .d-flex, .mb-0, .mb-3, .mb-4, .mb-6, .text-end, .text-muted {
+        background: transparent !important;
+        color: inherit;
+    }
+    
+    h2, h3, h4, h5, h6 {
+        color: var(--text-primary) !important;
+        background: transparent !important;
+    }
+    
+    small {
+        color: var(--text-muted) !important;
+        background: transparent !important;
+    }
+    
+    span {
+        background: transparent !important;
+    }
+    
+    /* Botones del header */
+    .btn {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-primary);
+        transition: var(--transition);
+    }
+    
+    .btn:hover {
+        background: var(--bg-secondary);
+        border-color: var(--color-primary);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--color-primary), #2563eb) !important;
+        border-color: var(--color-primary) !important;
+        color: white !important;
+    }
+    
+    .btn-secondary {
+        background: var(--bg-secondary) !important;
+        border-color: var(--border-primary) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .btn-outline-info {
+        background: transparent !important;
+        border-color: var(--color-primary) !important;
+        color: var(--color-primary-light) !important;
+    }
+    
+    .btn-outline-info:hover {
+        background: var(--color-primary) !important;
+        color: white !important;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .row {
+            grid-template-columns: 1fr;
+        }
+        
+        .field-with-button {
+            flex-direction: column;
+        }
+        
+        .presetbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .card-header {
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+    }
+    
+    /* Estilos para botón de ejecutar deshabilitado */
+    #run:disabled {
+        background: var(--bg-tertiary) !important;
+        color: var(--text-muted) !important;
+        border-color: var(--border-light) !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+    
+    #run:disabled:hover {
+        background: var(--bg-tertiary) !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    #run .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid h-100" style="background: transparent; padding: 2rem;">
+    
+    <!-- Header con controles principales -->
+    <div class="orchestrator-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="mb-0"><i class="fas fa-cogs"></i> Orquestador de Traducciones</h2>
+                <small class="text-muted">Configura y ejecuta traducciones automáticas de campañas DCS</small>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-info btn-sm" onclick="loadPresetsAndModels()">
+                    <i class="fas fa-sync"></i> Actualizar
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="loadUserConfig()" title="Recargar configuración">
+                    <i class="fas fa-undo"></i> Recargar
+                </button>
+                <button class="btn btn-outline-warning btn-sm" onclick="window.open('/campaigns', '_blank')">
+                    <i class="fas fa-list"></i> Ver Campañas
+                </button>
+            </div>
+        </div>
+        
+        <!-- Estadísticas rápidas -->
+        <div class="orchestrator-stats mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-info-circle me-2" style="color: #60a5fa;"></i>
+                        <span style="color: #94a3b8;">Estado del Sistema</span>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="badge bg-success" id="systemStatus">Sistema Listo</span>
+                    <span class="badge bg-info" id="configStatus">Configuración OK</span>
+                    <span class="badge bg-warning" id="modelStatus">Modelo Pendiente</span>
+                    <span class="badge bg-secondary" id="profileStatus" style="display: none;">👤 Sin Perfil</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="fade-in">
+
+    <!-- Banner de actualización (auto-oculto si no hay nueva versión) -->
+    <div id="updateBanner" class="hidden">
+        <div class="card mb-6" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <div style="color: #fbbf24;">
+                    <strong>🎉 Nueva versión disponible:</strong> 
+                    <span id="latestVer" style="color: #e2e8f0;"></span>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+                    <button type="button" id="btnUpdateNow" class="btn btn-primary">Actualizar ahora</button>
+                    <a id="updateLink" href="#" target="_blank" rel="noopener" class="btn btn-secondary">Ver en GitHub</a>
+                </div>
+                <span id="updMsg" style="color: #94a3b8; font-size: 0.875rem; width: 100%;"></span>
+            </div>
+        </div>
+    </div>
+
+    <form id="cfg">
+        <!-- CARGAR PERFILES (ANTES DE CONFIGURACIONES) -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="card-icon">📂</div>
+                <div>
+                    <h3 class="card-title">Cargar Perfil de Configuración</h3>
+                    <p class="card-subtitle">Carga una configuración previamente guardada</p>
+                </div>
+            </div>
+        
+            <div style="padding: 1.5rem;">
+                <!-- PERFILES DISPONIBLES -->
+                <div class="row" style="margin-bottom: 16px;">
+                    <div style="width: 100%;">
+                        <label>
+                            PERFILES DISPONIBLES
+                            <button type="button" class="help-btn" data-help="profiles">?</button>
+                        </label>
+                        <div style="display: flex; gap: 8px; align-items: stretch;">
+                            <select id="profilesList" style="flex: 1;">
+                                <option value="">Seleccionar perfil...</option>
+                            </select>
+                            <button type="button" id="btnRefreshProfiles" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                        </div>
+                        <div class="muted" id="profilesHint" style="font-size: 0.85em; color: #94a3b8; margin-top: 4px;">
+                            Los perfiles incluyen toda tu configuración general y del modelo
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACCIONES DE CARGA -->
+                <div class="row">
+                    <div style="width: 100%;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                            <button type="button" id="btnLoadProfile" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Cargar Perfil Completo
+                            </button>
+                            <div style="border-left: 1px solid rgba(148, 163, 184, 0.3); height: 32px; margin: 0 8px;"></div>
+                            <button type="button" id="btnUpdateProfile" class="btn btn-outline-warning">
+                                <i class="fas fa-sync-alt"></i> Actualizar Perfil
+                            </button>
+                            <button type="button" id="btnDeleteProfile" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i> Eliminar Perfil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONFIGURACIÓN COMPLETA UNIFICADA -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <div class="card-icon">⚙️</div>
+                <div>
+                    <h3 class="card-title">Configuración Completa</h3>
+                    <p class="card-subtitle">Toda tu configuración general y del modelo en un solo lugar</p>
+                </div>
+            </div>
+        
+            <div id="userConfigSection">
+            
+            <!-- DETECCIÓN AUTOMÁTICA DE DCS -->
+            <div class="row" style="margin-bottom: 20px; padding: 16px; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 8px;">
+                <div style="width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <div style="color: #22c55e; font-size: 1.2rem;">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <label style="color: #22c55e; font-weight: 600; margin: 0;">
+                            DETECCIÓN AUTOMÁTICA DE DCS
+                        </label>
+                        <button type="button" class="help-btn" data-help="auto-detect-dcs">?</button>
+                    </div>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 12px;">
+                        Detecta automáticamente la instalación de DCS World y llena las rutas de campañas y despliegue
+                    </p>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" id="btnDetectDCS" class="btn btn-success">
+                            <i class="fas fa-search"></i> Detectar DCS World
+                        </button>
+                        <span id="dcsDetectionStatus" class="status-message"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <label>
+                        RUTA CAMPAÑAS
+                        <button type="button" class="help-btn" data-help="user-root-dir">?</button>
+                    </label>
+                    <input type="text" id="userRootDir" placeholder="C:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns" />
+                    <div class="validation-status" id="rootDirStatus"></div>
+                </div>
+                <div>
+                    <label>
+                        FICHERO OBJETIVO A TRADUCIR
+                        <button type="button" class="help-btn" data-help="user-file-target">?</button>
+                    </label>
+                    <input type="text" id="userFileTarget" value="l10n/DEFAULT/dictionary" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div style="width: 100%;">
+                    <label>
+                        URL LM STUDIO
+                        <button type="button" class="help-btn" data-help="user-lm-url">?</button>
+                    </label>
+                    <input type="url" id="userLmUrl" value="http://localhost:1234/v1" placeholder="http://localhost:1234/v1" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div style="width: 100%;">
+                    <label>
+                        RUTA DESPLIEGUE MISIONES TRADUCIDAS
+                        <button type="button" class="help-btn" data-help="user-deploy-dir">?</button>
+                    </label>
+                    <input type="text" id="userDeployDir" placeholder="Ruta donde copiar las misiones traducidas como ROOT_DIR (ej: D:\Program Files\Eagle Dynamics\DCS World\Mods\campaigns\ )" />
+                    <div class="validation-status" id="deployDirStatus"></div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div>
+                    <label>
+                        SOBRESCRIBIR MISIONES ORIGINALES
+                        <button type="button" class="help-btn" data-help="user-deploy-overwrite">?</button>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="userDeployOverwrite" checked />
+                        <span class="checkbox-label">Sobrescribir archivos existentes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIGURACIÓN DEL MODELO INTEGRADA -->
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 2px solid rgba(148, 163, 184, 0.2);">
+                <h5 style="color: #f1f5f9; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    🤖 Configuración del Modelo
+                </h5>
+                
+                <!-- MODELO PREFERIDO -->
+                <div class="modelbar">
+                    <label>MODELO PREFERIDO</label>
+                    <button type="button" class="help-btn" data-help="user-lm-model">?</button>
+                    <select id="userLmModel">
+                        <option value="">Seleccionar modelo...</option>
+                    </select>
+                    <button type="button" id="btnRefreshModels" class="secondary">🔄 Actualizar</button>
+                    <div class="muted" id="lmModelsHint" style="font-size: 0.85em; color: #94a3b8;">Escaneando modelos disponibles...</div>
+                    
+                    <!-- INDICADOR DE ESTADO DEL MODELO -->
+                    <div id="modelStatusIndicator" style="margin-top: 8px; padding: 8px 12px; border-radius: 6px; font-size: 0.85em; display: none;">
+                        <span id="modelStatusIcon">❓</span>
+                        <span id="modelStatusText">Verificando estado del modelo...</span>
+                    </div>
+                </div>
+
+                <!-- PRESETS -->
+                <div class="card">
+                    <div class="presetbar">
+                        <label>Presets</label>
+                        <button type="button" class="help-btn" data-help="presets">?</button>
+                        <select id="presetList"></select>
+                        <button type="button" id="btnLoadPreset" class="secondary">Cargar</button>
+                    </div>
+                </div>
+
+                <!-- ARGS -->
+                <fieldset class="box">
+                    <legend>Parámetros del modelo (ARGS)
+                        <button type="button" class="help-btn" data-help="args">?</button>
+                    </legend>
+                    <div class="row">
+                        <div>
+                            <label>--config (PROMTS)</label>
+                            <select id="arg_config"></select>
+                        </div>
+                        <div>
+                            <label>--lm-compat</label>
+                            <select id="arg_compat">
+                                <option value="completions" selected>completions</option>
+                                <option value="chat">chat</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div>
+                            <label>--batch-size</label>
+                            <input type="text" id="arg_batch" value="4" />
+                        </div>
+                        <div>
+                            <label>--timeout (s)</label>
+                            <input type="text" id="arg_timeout" value="200" />
+                        </div>
+                    </div>
+
+                    <!-- Parámetros de API del modelo (desde preset) -->
+                    <div class="model-api-params" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                        <div class="row" style="margin-bottom: 12px;">
+                            <div style="grid-column: 1 / -1;">
+                                <label style="color: #60a5fa; font-weight: 600; font-size: 0.9rem;">Parámetros del Modelo (desde preset)</label>
+                                <small style="color: #94a3b8; display: block; margin-top: 4px;">Estos valores se cargan automáticamente desde el preset seleccionado</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div>
+                                <label>Temperature</label>
+                                <input type="number" id="api_temperature" step="0.01" min="0" max="2" readonly style="background: rgba(15, 23, 42, 0.5); color: #94a3b8;" />
+                            </div>
+                            <div>
+                                <label>Top P</label>
+                                <input type="number" id="api_top_p" step="0.01" min="0" max="1" readonly style="background: rgba(15, 23, 42, 0.5); color: #94a3b8;" />
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div>
+                                <label>Top K</label>
+                                <input type="number" id="api_top_k" min="1" max="100" readonly style="background: rgba(15, 23, 42, 0.5); color: #94a3b8;" />
+                            </div>
+                            <div>
+                                <label>Max Tokens</label>
+                                <input type="number" id="api_max_tokens" min="1" max="8192" readonly style="background: rgba(15, 23, 42, 0.5); color: #94a3b8;" />
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div>
+                                <label>Repetition Penalty</label>
+                                <input type="number" id="api_repetition_penalty" step="0.01" min="0.5" max="2" readonly style="background: rgba(15, 23, 42, 0.5); color: #94a3b8;" />
+                            </div>
+                            <div>
+                                <label>Presence Penalty</label>
+                                <input type="number" id="api_presence_penalty" step="0.01" min="0" max="2" readonly style="background: rgba(15, 23, 42, 0.5); color: #94a3b8;" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="muted" id="argsPreview">(preview de ARGS)</div>
+                </fieldset>
+            </div>
+
+            <!-- BOTONES UNIFICADOS Y GESTIÓN DE PERFILES -->
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 2px solid rgba(148, 163, 184, 0.2);">
+                <!-- BOTONES DE CONFIGURACIÓN PRINCIPAL -->
+                <div style="margin-bottom: 24px;">
+                    <h5 style="color: #f1f5f9; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        💾 Guardar Configuración 💾
+                    </h5>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <button type="button" id="btnAutoRoot" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-search"></i> Detectar DCS
+                        </button>
+                        <button type="button" id="btnSaveCompleteConfig" class="btn btn-success" style="padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+                            <i class="fas fa-save"></i> GUARDAR CONFIGURACIÓN COMPLETA
+                        </button>
+                        <button type="button" id="btnResetCompleteConfig" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo"></i> Restaurar valores por defecto
+                        </button>
+                        <span id="completeConfigStatus" class="status-message"></span>
+                    </div>
+                    <div id="autoRootMsg" class="status-message" style="margin-top: 8px;"></div>
+                </div>
+
+                <!-- GUARDAR PERFILES (DESPUÉS DE CONFIGURACIONES) -->
+                <div style="padding-top: 20px; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                    <h5 style="color: #f1f5f9; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        💾 Guardar Configuración como Perfil 💾
+                    </h5>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px;">
+                        Crea un nuevo perfil con tu configuración actual (general + modelo)
+                    </p>
+
+                    <!-- CREAR NUEVO PERFIL -->
+                    <div class="row">
+                        <div style="width: 100%;">
+                            <label style="margin-bottom: 8px; color: #60a5fa; font-weight: 600;">
+                                CREAR NUEVO PERFIL
+                            </label>
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <input type="text" id="newProfileName" placeholder="Nombre del perfil..." style="flex: 2;" />
+                                <input type="text" id="newProfileDescription" placeholder="Descripción (opcional)..." style="flex: 3;" />
+                                <button type="button" id="btnCreateProfile" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Crear Perfil
+                                </button>
+                            </div>
+                            <div class="muted" style="font-size: 0.85em; color: #94a3b8;">
+                                El perfil guardará TODA tu configuración actual (rutas, modelo, parámetros, presets)
+                            </div>
+                            <span id="profilesStatus" class="status-message"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- MODO DE TRABAJO -->
+        <div class="card mb-4" style="border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); background: rgba(15, 23, 42, 0.9);">
+            <div class="card-header" style="border-bottom: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px 12px 0 0; padding: 1.5rem;">
+                <div class="d-flex align-items-center">
+                    <div class="me-3" style="color: #60a5fa; font-size: 1.5rem;">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-1" style="color: #f1f5f9; font-weight: 600;">Modo de Trabajo</h3>
+                        <p class="mb-0" style="color: #94a3b8; font-size: 0.9rem;">Selecciona el tipo de operación a realizar</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="workModeSection" style="padding: 1.5rem;">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="mode-option-card" style="display: block; padding: 1.5rem; border: 2px solid rgba(148, 163, 184, 0.2); border-radius: 12px; background: rgba(30, 41, 59, 0.5); cursor: pointer; transition: all 0.3s ease;">
+                            <input type="radio" name="mode" value="traducir" checked style="margin-bottom: 0.5rem;"/> 
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-globe me-2" style="color: #60a5fa; font-size: 1.2rem;"></i>
+                                <strong style="color: #f1f5f9;">TRADUCIR</strong>
+                            </div>
+                            <small style="color: #94a3b8;">Extraer y traducir misiones</small>
+                        </label>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="mode-option-card" style="display: block; padding: 1.5rem; border: 2px solid rgba(148, 163, 184, 0.2); border-radius: 12px; background: rgba(30, 41, 59, 0.5); cursor: pointer; transition: all 0.3s ease;">
+                            <input type="radio" name="mode" value="reempaquetar" style="margin-bottom: 0.5rem;"/> 
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-box me-2" style="color: #10b981; font-size: 1.2rem;"></i>
+                                <strong style="color: #f1f5f9;">REEMPAQUETAR</strong>
+                            </div>
+                            <small style="color: #94a3b8;">Solo misiones traducidas</small>
+                        </label>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="mode-option-card" style="display: block; padding: 1.5rem; border: 2px solid rgba(148, 163, 184, 0.2); border-radius: 12px; background: rgba(30, 41, 59, 0.5); cursor: pointer; transition: all 0.3s ease;">
+                            <input type="radio" name="mode" value="desplegar" style="margin-bottom: 0.5rem;"/> 
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-rocket me-2" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                                <strong style="color: #f1f5f9;">DESPLEGAR</strong>
+                            </div>
+                            <small style="color: #94a3b8;">Solo misiones reempaquetadas</small>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Indicador de misiones disponibles por modo -->
+                <div class="mt-3 d-flex justify-content-center">
+                    <span class="badge bg-info" id="mode-missions-text" style="font-size: 0.9rem; padding: 0.5rem 1rem;">Cargando...</span>
+                </div>
+            </div>
+        
+        <!-- OPCIONES DE TRADUCCIÓN -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-content">
+                    <h3 class="card-title">Opciones de Traducción</h3>
+                </div>
+            </div>
+            
+            <div id="translation-options" class="translation-options">
+                <div class="row">
+                    <div>
+                        <label class="inline checkbox-option" id="cache-option">
+                            <input type="checkbox" id="useCache" name="useCache" checked />
+                            <span style="margin-left: 8px;">
+                                <strong>Usar cache de traducciones</strong>
+                                <button type="button" class="help-btn" data-help="cache" style="margin-left: 4px;">?</button>
+                            </span>
+                            <small class="option-desc" style="display: block; margin-left: 24px; margin-top: 4px; color: #94a3b8; font-size: 0.85em;">
+                                Reutilizar traducciones previas para acelerar el proceso. Desactivar para traducción completamente nueva.
+                            </small>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div>
+                        <label class="inline checkbox-option" id="overwrite-cache-option">
+                            <input type="checkbox" id="overwriteCache" name="overwriteCache" />
+                            <span style="margin-left: 8px;">
+                                <strong>Sobrescribir cache</strong>
+                                <button type="button" class="help-btn" data-help="overwrite-cache" style="margin-left: 4px;">?</button>
+                            </span>
+                            <small class="option-desc" style="display: block; margin-left: 24px; margin-top: 4px; color: #94a3b8; font-size: 0.85em;">
+                                Actualizar cache existente con nuevas traducciones. Solo aplica cuando el cache está desactivado.
+                            </small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- CAMPAÑAS Y MISIONES -->
+        <div class="card mb-6">
+            <div class="card-header">
+                <div class="card-icon">🌍</div>
+                <div>
+                    <h3 class="card-title">Campañas y Misiones</h3>
+                    <p class="card-subtitle">Selecciona las campañas y misiones a procesar</p>
+                </div>
+            </div>
+            
+            <div id="campaignsConfigSection">
+            <div class="campaigns-missions-row">
+            <div>
+                <button type="button" id="scanCampaigns" class="secondary">🔍 Escanear campañas</button>
+                <div id="campaigns" class="missions" aria-label="Campañas detectadas"></div>
+            </div>
+            <div>
+                <div class="fc-and-controls">
+                    <label title="Incluye misiones de Flaming Cliffs (-FC-) en la lista" class="inline">
+                        <input type="checkbox" id="include_fc" /> Incluir misiones -FC- (Flaming Cliffs)
+                        <button type="button" class="help-btn" data-help="fc">?</button>
+                    </label>
+                    <div class="mission-controls">
+                        <button type="button" id="refreshMissions" class="btn-small">🔄 Refrescar</button>
+                        <button type="button" id="selectAllMissions" class="btn-small">✅ Marcar todas</button>
+                        <button type="button" id="deselectAllMissions" class="btn-small">❌ Desmarcar todas</button>
+                    </div>
+                </div>
+                <div id="missions" class="missions" aria-label="Misiones disponibles"></div>
+            </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- CONTROLES DE EJECUCIÓN -->
+        <div class="card">
+            <div style="display: flex; gap: 1rem; align-items: center; justify-content: center;">
+                <button type="button" id="run" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                    ▶ Ejecutar Traducción
+                </button>
+                <button type="button" id="cancel" class="btn btn-danger">
+                    ✖ Cancelar
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- PROGRESO EN TIEMPO REAL -->
+    <div class="card" id="currentProgressCard" style="display: none;">
+        <div class="card-header">
+            <div class="card-icon">⏳</div>
+            <div>
+                <h3 class="card-title">Progreso Actual</h3>
+                <p class="card-subtitle">Estado de la ejecución en curso</p>
+            </div>
+        </div>
+        
+        <div class="current-progress-content">
+            <!-- Estado actual detallado -->
+            <div class="current-execution-header">
+                <div class="current-phase" id="currentPhase">Iniciando...</div>
+            </div>
+            
+            <!-- BARRA DE PROGRESO GENERAL (Misiones) -->
+            <div class="progress-section">
+                <div class="progress-label">
+                    <span class="progress-title"><i class="fas fa-tasks"></i> Progreso General</span>
+                    <span class="progress-counter" id="missionsProgressCounter">0/0 misiones</span>
+                </div>
+                <div class="current-progress-bar">
+                    <div class="progress-fill" id="currentProgressFill" style="width: 0%"></div>
+                    <span class="progress-text" id="currentProgressText">0%</span>
+                </div>
+            </div>
+            
+            <!-- BARRA DE PROGRESO DE MISIÓN ACTUAL (Lotes) -->
+            <div class="progress-section" id="currentMissionProgressSection" style="display: none;">
+                <div class="progress-label">
+                    <span class="progress-title"><i class="fas fa-bullseye"></i> Misión Actual</span>
+                    <div class="progress-controls">
+                        <span class="progress-counter" id="batchesProgressCounter">0/0 lotes</span>
+                        <button class="clear-mission-btn" id="clearMissionBtn" onclick="window.orchestrator.clearMissionProgress()" style="display: none;" title="Limpiar progreso de misión">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="current-progress-bar mission-progress">
+                    <div class="progress-fill mission-fill" id="missionProgressFill" style="width: 0%"></div>
+                    <span class="progress-text" id="missionProgressText">0%</span>
+                </div>
+                <!-- Contadores de cache y modelo -->
+                <div class="mission-counters" style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                    <span><i class="fas fa-bolt"></i> Cache: <span id="cacheHits">0</span></span>
+                    <span><i class="fas fa-robot"></i> Modelo: <span id="modelCalls">0</span></span>
+                </div>
+                <div class="lm-studio-info" style="margin-top: 8px;">
+                    <small class="text-muted">
+                        <i class="fas fa-eye"></i> <strong>Tip:</strong> Puedes ver las traducciones en tiempo real en los <strong>Developer Logs</strong> de LM Studio
+                    </small>
+                </div>
+            </div>
+            
+            <!-- Información de campaña y misión actual -->
+            <div class="current-details">
+                <div class="current-campaign">
+                    <strong>Campaña:</strong> <span id="currentCampaignName">-</span>
+                </div>
+                <div class="current-mission">
+                    <strong>Misión actual:</strong> <span id="currentMissionName">-</span>
+                </div>
+            </div>
+            
+            <!-- Contadores en tiempo real -->
+            <div class="current-stats">
+                <div class="current-stat-card">
+                    <div class="current-stat-label">Total Misiones</div>
+                    <div class="current-stat-number" id="currentTotalMissions">0</div>
+                </div>
+                <div class="current-stat-card">
+                    <div class="current-stat-label">Procesadas</div>
+                    <div class="current-stat-number" id="currentProcessedMissions">0</div>
+                </div>
+                <div class="current-stat-card">
+                    <div class="current-stat-label">Exitosas</div>
+                    <div class="current-stat-number success" id="currentSuccessfulMissions">0</div>
+                </div>
+                <div class="current-stat-card">
+                    <div class="current-stat-label">Fallidas</div>
+                    <div class="current-stat-number error" id="currentFailedMissions">0</div>
+                </div>
+            </div>
+            
+            <!-- LOG EN TIEMPO REAL -->
+            <div class="real-time-log" id="realTimeLog" style="display: none;">
+                <div class="log-header">
+                    <strong>🔍 Log en Tiempo Real</strong>
+                    <div class="log-controls">
+                        <button type="button" id="clearLog" class="btn-small">🗑️ Limpiar</button>
+                        <button type="button" id="toggleAutoScroll" class="btn-small active" data-enabled="true">📜 Auto-scroll</button>
+                    </div>
+                </div>
+                <div class="log-content" id="logContent">
+                    <!-- Los logs aparecerán aquí dinámicamente -->
+                </div>
+            </div>
+            
+            <!-- ERRORES Y ADVERTENCIAS -->
+            <div class="error-panel" id="errorPanel" style="display: none;">
+                <div class="error-header">
+                    <strong>⚠️ Errores y Advertencias</strong>
+                    <button type="button" id="clearErrors" class="btn-small">🗑️ Limpiar errores</button>
+                </div>
+                <div class="error-list" id="errorList">
+                    <!-- Los errores aparecerán aquí dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESUMEN DE EJECUCIÓN -->
+    <div class="card mb-4" style="border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.2); background: rgba(15, 23, 42, 0.9);">
+        <div class="card-header" style="border-bottom: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px 12px 0 0; padding: 1.5rem;">
+            <div class="d-flex align-items-center">
+                <div class="me-3" style="color: #60a5fa; font-size: 1.5rem;">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div>
+                    <h3 class="mb-1" style="color: #f1f5f9; font-weight: 600;">Resumen de Ejecución</h3>
+                    <p class="mb-0" style="color: #94a3b8; font-size: 0.9rem;">Resultados de la última operación realizada</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="executionConfigSection">
+        <div id="executionSummary">
+        <div id="noExecutionMessage" class="no-execution-message">
+            <div class="empty-state">
+                <span class="empty-icon">📊</span>
+                <p><strong>Sin ejecuciones recientes</strong></p>
+                <p class="empty-text">Los resultados de la última ejecución aparecerán aquí</p>
+            </div>
+        </div>
+        
+        <div id="summaryContent" class="summary-content" style="display: none;">
+            <!-- Información general de la ejecución -->
+            <div class="execution-header">
+                <div class="execution-info">
+                    <div class="execution-mode">
+                        <span class="mode-badge" id="executionMode">-</span>
+                    </div>
+                    <div class="execution-time">
+                        <span class="time-label">Tiempo total:</span>
+                        <span class="time-value" id="executionTime">-</span>
+                    </div>
+                    <div class="execution-date">
+                        <span class="date-label">📅 Ejecutado:</span>
+                        <span class="date-value" id="executionDate">-</span>
+                    </div>
+                </div>
+                <div class="execution-status" id="executionStatus">
+                    <span class="status-indicator" id="statusIndicator">⏳</span>
+                    <span class="status-text" id="statusText">En proceso</span>
+                </div>
+            </div>
+
+            <!-- Estadísticas generales -->
+            <div class="execution-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Campañas</div>
+                    <div class="stat-number" id="totalCampaigns">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Misiones</div>
+                    <div class="stat-number" id="totalMissions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Exitosas</div>
+                    <div class="stat-number success" id="successfulMissions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fallidas</div>
+                    <div class="stat-number error" id="failedMissions">0</div>
+                </div>
+            </div>
+
+            <!-- Estadísticas de caché -->
+            <div class="cache-stats" id="cacheStats">
+                <h4>💾 Estadísticas de Caché</h4>
+                <div class="cache-stats-grid">
+                    <div class="cache-stat-card">
+                        <div class="cache-stat-label">Tasa de Caché</div>
+                        <div class="cache-stat-number" id="cacheHitRate">0%</div>
+                    </div>
+                    <div class="cache-stat-card">
+                        <div class="cache-stat-label">Desde Caché</div>
+                        <div class="cache-stat-number cache-hits" id="totalCacheHits">0</div>
+                    </div>
+                    <div class="cache-stat-card">
+                        <div class="cache-stat-label">Enviadas al Modelo</div>
+                        <div class="cache-stat-number model-calls" id="totalApiCalls">0</div>
+                    </div>
+                    <div class="cache-stat-card">
+                        <div class="cache-stat-label">Tiempo Procesado</div>
+                        <div class="cache-stat-number" id="processingTime">0s</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de detalles por misión -->
+            <div class="missions-detail" id="missionsDetail">
+                <h4>📁 Detalle por Misión</h4>
+                <div class="missions-table-container">
+                    <table class="missions-table">
+                        <thead>
+                            <tr>
+                                <th>Campaña</th>
+                                <th>Misión</th>
+                                <th>Estado</th>
+                                <th>Errores</th>
+                                <th>Tiempo</th>
+                                <th>Caché/Modelo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="missionsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Errores detallados -->
+            <div class="errors-section" id="errorsSection" style="display: none;">
+                <h4>⚠️ Errores Detallados</h4>
+                <div class="errors-list" id="errorsList"></div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Modal explicativo de perfiles -->
+<div id="profileExplanationModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="profileExplanationTitle">
+    <div class="modal-card">
+        <header>
+            <strong id="profileExplanationTitle">🎯 ¿Qué son los Perfiles de Configuración?</strong>
+            <button type="button" class="close-modal" data-modal="profileExplanationModal">&times;</button>
+        </header>
+        <div class="content">
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="color: #3b82f6; margin-bottom: 0.75rem;">💡 Los perfiles te permiten guardar configuraciones completas</h3>
+                <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.5;">
+                    Un perfil guarda TODA tu configuración actual: rutas, modelo, parámetros, presets y configuraciones específicas. 
+                    Perfecto para crear configuraciones especializadas según tus necesidades.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 1rem;">
+                    <h4 style="color: #60a5fa; margin: 0 0 0.5rem 0; font-size: 0.95rem;">🎮 Por Modelo</h4>
+                    <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0; line-height: 1.4;">
+                        Crea perfiles específicos para cada modelo que uses (Llama, Gemma, etc.) con sus parámetros optimizados.
+                    </p>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 1rem;">
+                    <h4 style="color: #34d399; margin: 0 0 0.5rem 0; font-size: 0.95rem;">🌍 Por Campaña</h4>
+                    <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0; line-height: 1.4;">
+                        Diferentes campañas pueden requerir configuraciones distintas. Guarda un perfil para cada una.
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 1rem;">
+                    <h4 style="color: #fbbf24; margin: 0 0 0.5rem 0; font-size: 0.95rem;">⚡ Por Velocidad</h4>
+                    <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0; line-height: 1.4;">
+                        "Traducción Rápida" vs "Traducción de Calidad" - diferentes configuraciones para diferentes prioridades.
+                    </p>
+                </div>
+                <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 1rem;">
+                    <h4 style="color: #a78bfa; margin: 0 0 0.5rem 0; font-size: 0.95rem;">🔧 Por Proyecto</h4>
+                    <p style="color: #cbd5e1; font-size: 0.85rem; margin: 0; line-height: 1.4;">
+                        Cada proyecto puede tener rutas, modelos y configuraciones específicas. Un perfil por proyecto.
+                    </p>
+                </div>
+            </div>
+
+            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <h4 style="color: #e2e8f0; margin: 0 0 0.75rem 0; font-size: 1rem;">📋 ¿Qué guarda un perfil?</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <ul style="margin: 0; padding-left: 1.25rem; color: #94a3b8; font-size: 0.9rem; line-height: 1.6;">
+                        <li>Rutas de campañas y despliegue</li>
+                        <li>Modelo preferido y URL</li>
+                        <li>Parámetros ARGS completos</li>
+                    </ul>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: #94a3b8; font-size: 0.9rem; line-height: 1.6;">
+                        <li>Configuración de caché</li>
+                        <li>Presets activos</li>
+                        <li>Todas las opciones personalizadas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button type="button" class="close-modal btn btn-primary" data-modal="profileExplanationModal" style="padding: 0.75rem 2rem; font-size: 0.95rem;">
+                    <i class="fas fa-check"></i> ¡Entendido, empezar a usar perfiles!
+                </button>
+                <p style="color: #64748b; font-size: 0.8rem; margin: 0.75rem 0 0 0;">
+                    Este mensaje solo aparece la primera vez. Puedes crear tu primer perfil cuando tengas tu configuración lista.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal principal LM Studio -->
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal-card">
+        <header><strong id="helpTitle">Ayuda rápida</strong></header>
+        <div class="content">
+            <h3>LM Studio — Descarga e instalación</h3>
+            <ol>
+                <li>Descarga LM Studio desde <a href="https://lmstudio.ai" target="_blank" rel="noopener">lmstudio.ai</a>.</li>
+                <li>Instálalo y ábrelo. En la pestaña de modelos, descarga uno "Instruct".</li>
+                <li>Activa la API local: menú "Developer" → "Enable Local Server".</li>
+                <li>Comprueba la URL (por defecto): <code>http://localhost:1234/v1</code>.</li>
+                <li>Carga el modelo (desde LM Studio o vía CLI si lo tienes): aparecerá en "Escanear LM Studio".</li>
+            </ol>
+
+            <h3>Configuración recomendada</h3>
+            <ul>
+                <li><b>--lm-compat</b>: <code>completions</code> (típico en LM Studio).</li>
+                <li><b>--config</b>: elige un YAML de <code>./PROMTS</code> con tus reglas de traducción.</li>
+                <li><b>--lm-model</b>: selecciona uno de la lista detectada.</li>
+                <li><b>--timeout</b>: aumenta si el modelo es lento.</li>
+            </ul>
+
+            <h3>Notas</h3>
+            <ul>
+                <li>Si <b>DEPLOY_OVERWRITE</b> está en <code>false</code>, el deploy va a <code>Translated_ES/</code> sin tocar originales.</li>
+                <li>Las misiones <b>✅ Deploy</b> ya están empaquetadas en <code>finalizado/</code>. Las <b>✨ Traducida</b> tienen solo el <code>.translated.lua</code>.</li>
+            </ul>
+        </div>
+        <footer><button id="closeHelp" class="secondary">Cerrar</button></footer>
+    </div>
+</div>
+
+<!-- Modal reutilizable para mini-ayudas -->
+<div id="miniModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="miniTitle">
+    <div class="modal-card">
+        <header><strong id="miniTitle">Ayuda</strong></header>
+        <div class="content" id="miniContent"></div>
+        <footer><button id="miniClose" class="secondary">Cerrar</button></footer>
+    </div>
+</div>
+
+<!-- Modal de confirmación de ejecución -->
+<div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal-card">
+        <header>
+            <h3 id="confirmTitle"><i class="fas fa-play-circle"></i> Confirmar Ejecución</h3>
+        </header>
+        <div class="content" id="confirmContent">
+            <div class="confirm-summary">
+                <h4>Resumen de la operación:</h4>
+                <div class="confirm-details">
+                    <div class="confirm-row">
+                        <strong>Modo:</strong> <span id="confirmMode"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <strong>Campaña:</strong> <span id="confirmCampaign"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <strong>Misiones seleccionadas:</strong> <span id="confirmMissionCount"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <strong>Modelo LM:</strong> <span id="confirmModel"></span>
+                    </div>
+                    <div class="confirm-row">
+                        <strong>Usar cache:</strong> <span id="confirmUseCache"></span>
+                    </div>
+                    <div class="confirm-row" id="confirmOverwriteCacheRow" style="display: none;">
+                        <strong>Sobrescribir cache:</strong> <span id="confirmOverwriteCache"></span>
+                    </div>
+                </div>
+                <div class="confirm-missions">
+                    <h5>Misiones a procesar:</h5>
+                    <ul id="confirmMissionsList"></ul>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <button id="confirmCancel" class="secondary"><i class="fas fa-times" style="margin-right: 6px;"></i>Cancelar</button>
+            <button id="confirmExecute" class="primary"><i class="fas fa-play" style="margin-right: 6px;"></i>Ejecutar</button>
+        </footer>
+    </div>
+</div>
+
+</div> <!-- Cierre del container-fluid -->
+{% endblock %}
+
+{% block scripts %}
+    <!-- Forzar la base URL correcta para prevenir URLs mal formadas -->
+    <script>
+        // Función global para construir URLs de API correctas
+        window.API_BASE = '/api/';
+        window.buildApiUrl = function(endpoint) {
+            return window.API_BASE + endpoint;
+        };
+        
+        // Sobrescribir fetch para URLs de API
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            // Si la URL parece ser una API relativa mal formada, corregirla
+            if (typeof url === 'string') {
+                if (url.startsWith('api/')) {
+                    url = '/' + url;
+                    console.log('URL API corregida:', url);
+                }
+            }
+            return originalFetch(url, options);
+        };
+    </script>
+    <script src="{{ url_for('static', filename='js/orchestrator.js') }}?v=20251114_button_lock"></script>
+{% endblock %}

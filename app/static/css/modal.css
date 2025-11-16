@@ -1,0 +1,74 @@
+/* Estilos para modales */
+
+.modal { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0, 0, 0, 0.85); 
+    backdrop-filter: blur(4px);
+    display: none; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1000; 
+}
+
+.modal.open { 
+    display: flex; 
+}
+
+.modal-card { 
+    background: var(--bg-color, #1e293b); 
+    color: var(--text-color, #e2e8f0);
+    width: min(900px, 92vw); 
+    max-height: 85vh; 
+    overflow: auto; 
+    border-radius: 12px; 
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8); 
+    border: 1px solid var(--border-color, #334155);
+    position: relative;
+    opacity: 1;
+}
+
+.modal-card header, 
+.modal-card footer { 
+    padding: 12px 16px; 
+    border-bottom: 1px solid #eee; 
+}
+
+.modal-card footer { 
+    border-top: 1px solid #eee; 
+    border-bottom: none; 
+    text-align: right; 
+}
+
+.modal-card .content { 
+    padding: 12px 16px; 
+}
+
+.modal-card h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+/* Backdrop para cerrar modal */
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+}
+
+/* Animaciones */
+.modal.open .modal-card {
+    animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DCS Orquestador Traductor (Web){% endblock %} — {{ version }}</title>
+    
+    <!-- Base URL para resolver URLs relativas correctamente -->
+    <base href="{{ url_for('main.index') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='DCS_SPANISH.ico') }}">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    
+    <!-- Scripts -->
+    {% if not request.endpoint or 'orchestrator' not in request.endpoint %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% endif %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

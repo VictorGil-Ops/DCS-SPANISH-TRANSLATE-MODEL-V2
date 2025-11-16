@@ -1,0 +1,152 @@
+{% extends "modern-base.html" %}
+
+{% block title %}Gestión de Campañas{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme-extras.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/campaigns.css') }}?v=orchestrator_grey_theme_20251126">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid h-100" style="background: transparent; padding: 2rem;"}
+    
+    <!-- Header con controles principales -->
+    <div class="campaigns-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="mb-0">🏛️ Gestión de Campañas</h2>
+                <small class="text-muted">Gestión completa de campañas traducidas, empaquetadas y desplegadas</small>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-info btn-sm" onclick="refreshCampaigns()">
+                    <i class="fas fa-sync"></i> Actualizar
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="cleanupModals()" title="Limpiar modales si se quedan abiertos">
+                    <i class="fas fa-broom"></i> Limpiar
+                </button>
+                <button class="btn btn-outline-warning btn-sm" onclick="openCacheManager()">
+                    <i class="fas fa-database"></i> Gestionar Cache
+                </button>
+            </div>
+        </div>
+        
+        <!-- Filtros y estadísticas -->
+        <div class="campaigns-filters mb-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" class="form-control form-control-sm" 
+                           id="campaignFilter" placeholder="🔍 Filtrar campañas..." 
+                           onkeyup="filterCampaigns()">
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="badge bg-primary" id="totalCampaigns">0 campañas</span>
+                    <span class="badge bg-success" id="totalMissions">0 misiones</span>
+                    <span class="badge bg-info" id="totalSizeMB">0 MB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de campañas -->
+    <div class="campaigns-table-container">
+        {% if error %}
+        <div class="alert alert-danger">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+        
+        <div id="campaignsContainer">
+            <!-- Las campañas se cargarán dinámicamente aquí -->
+            <div class="loading-state text-center p-5">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary mb-3"></i>
+                <h4>Cargando campañas...</h4>
+                <p class="text-muted">Escaneando directorio de traducciones</p>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Modal para gestión de cache - Sistema por Misión -->
+<div class="modal fade cache-modal" id="cacheModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-project-diagram"></i>
+                    Gestión de Cache de Traducciones
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                
+                <!-- Contenedor principal del cache -->
+                <div id="cacheEntries">
+                    <div class="cache-loading">
+                        <div class="spinner-border" role="status"></div>
+                        <p class="mt-2">Inicializando sistema de cache...</p>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🗑️ Eliminar Traducción (Backup Protegido)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar la traducción de la misión <strong id="deleteTarget"></strong>?</p>
+                
+                <div class="alert alert-info mb-3">
+                    <h6><i class="fas fa-info-circle"></i> ¿Qué se eliminará?</h6>
+                    <ul class="mb-0">
+                        <li>📝 Archivos LUA traducidos (out_lua/)</li>
+                        <li>📂 Archivos extraídos (extracted/)</li>
+                        <li>📦 Misión finalizada (finalizado/)</li>
+                        <li>📋 Reportes y logs de traducción</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-success mb-3">
+                    <h6><i class="fas fa-shield-alt"></i> ¿Qué se preservará?</h6>
+                    <ul class="mb-0">
+                        <li>🇬🇧 <strong>Backup original</strong> (backup/) - ¡PROTEGIDO!</li>
+                        <li>🔄 Podrás restaurar la misión original más tarde</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Esta acción no se puede deshacer.</strong> Tendrás que volver a traducir la misión si quieres recuperar los archivos traducidos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Eliminar Traducción
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/campaigns.js') }}?v=2025102505"></script>
+{% endblock %}

@@ -1,0 +1,221 @@
+/* ====================================
+   FORZAR TEMA OSCURO - Override Agresivo
+   ==================================== */
+
+/* Forzar fondo oscuro en TODOS los elementos */
+* {
+    color: inherit !important;
+}
+
+html, body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+    color: #e2e8f0 !important;
+    min-height: 100vh !important;
+}
+
+/* Override completo de Bootstrap */
+.container, .container-fluid, 
+.row, .col, [class*="col-"] {
+    background: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+/* Forzar todos los elementos blancos a oscuro */
+div, section, article, aside, 
+header, footer, main, nav {
+    background-color: transparent !important;
+}
+
+/* Forzar texto visible */
+h1, h2, h3, h4, h5, h6, p, 
+span, div, td, th, li, a {
+    color: #e2e8f0 !important;
+}
+
+/* Específico para textos pequeños */
+small, .small, .text-sm {
+    color: #94a3b8 !important;
+}
+
+/* Forzar fondos de tabla oscuros */
+.table, .table > :not(caption) > * > * {
+    background: transparent !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.table tbody td {
+    background: rgba(30, 41, 59, 0.2) !important;
+    color: #cbd5e1 !important;
+}
+
+/* Forzar cards oscuras */
+.card, .card-body, .card-header, .card-footer {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Forzar badges específicos por tipo */
+.badge:not([class*="bg-"]):not([class*="text-bg-"]) {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: white !important;
+}
+
+/* Forzar botones específicos */
+.btn:not([class*="btn-"]) {
+    background: linear-gradient(135deg, #374151, #4b5563) !important;
+    border-color: rgba(148, 163, 184, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Override para elementos con fondos blancos específicos */
+.bg-white, .bg-light {
+    background: rgba(30, 41, 59, 0.6) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Estados específicos de la aplicación */
+.loading-state, .empty-state {
+    background: rgba(30, 41, 59, 0.4) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Forzar inputs oscuros */
+input, textarea, select, .form-control, .form-select {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #64748b !important;
+}
+
+/* Dropdowns */
+.dropdown, .dropdown-menu {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.dropdown-item {
+    color: #e2e8f0 !important;
+}
+
+/* Alertas */
+.alert {
+    border-width: 1px !important;
+    border-style: solid !important;
+}
+
+/* Navegación */
+.navbar, .nav {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+.navbar-brand, .nav-link {
+    color: #e2e8f0 !important;
+}
+
+/* Modales */
+.modal-backdrop {
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Tooltips y popovers */
+.tooltip, .popover {
+    background: rgba(30, 41, 59, 0.95) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* Spinners */
+.spinner-border {
+    color: #3b82f6 !important;
+}
+
+.spinner-grow {
+    color: #3b82f6 !important;
+}
+
+/* Progress bars */
+.progress {
+    background: rgba(30, 41, 59, 0.6) !important;
+}
+
+.progress-bar {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+}
+
+/* Breadcrumbs */
+.breadcrumb {
+    background: rgba(30, 41, 59, 0.4) !important;
+}
+
+.breadcrumb-item, .breadcrumb-item a {
+    color: #e2e8f0 !important;
+}
+
+/* Pagination */
+.page-item .page-link {
+    background: rgba(30, 41, 59, 0.6) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+.page-item.active .page-link {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    border-color: #3b82f6 !important;
+}
+
+/* Lista groups */
+.list-group-item {
+    background: rgba(30, 41, 59, 0.6) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Acordeones */
+.accordion-item {
+    background: rgba(30, 41, 59, 0.6) !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.accordion-button {
+    background: rgba(51, 65, 85, 0.8) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Tabs */
+.nav-tabs .nav-link {
+    background: rgba(30, 41, 59, 0.6) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.nav-tabs .nav-link.active {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: white !important;
+    border-color: #3b82f6 !important;
+}
+
+/* Offcanvas */
+.offcanvas {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Toast */
+.toast {
+    background: rgba(30, 41, 59, 0.95) !important;
+    color: #e2e8f0 !important;
+    border-color: rgba(148, 163, 184, 0.3) !important;
+}

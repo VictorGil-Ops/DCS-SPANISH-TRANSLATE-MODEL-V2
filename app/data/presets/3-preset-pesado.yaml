@@ -1,0 +1,72 @@
+# PRESET PESADO - EQUIPOS HIGH-END
+# Optimizado para: 16GB+ RAM, GPU dedicada potente (RTX 4070+/RTX 3080+), CPU high-end
+# Modelos recomendados: Llama-3.1-70B-Instruct, gemma-2-27b-it
+
+name: "Pesado - Equipos High-End"
+description: "Configuración de máxima calidad para equipos potentes. Solo Llama y Gemma instruct grandes."
+weight: "pesado"
+hardware_profile: "high-end"
+supported_models:
+  llama: "Llama-3.1-70B-Instruct"
+  gemma: "gemma-2-27b-it"
+
+# Configuración de procesamiento
+batch_size: 2                    # Lotes pequeños para evitar OOM en modelos 27B-70B
+timeout: 600                     # Timeout extendido para modelos muy grandes
+max_concurrent_requests: 1       # Una sola petición para evitar saturar memoria
+context_window: 8192            # Ventana de contexto máxima
+
+# Configuración LM optimizada para modelos grandes instruct
+lm_compat: "completions"
+config: "3-instruct-pesado.yaml"  # Prompt optimizado para Llama/Gemma grandes
+
+# Parámetros del modelo (optimizados para calidad máxima)
+lm_api_config:
+  temperature: 0.3              # Temperatura creativa pero controlada
+  top_p: 0.95                   # Sampling amplio para riqueza
+  top_k: 50                     # Diversidad alta para modelos grandes
+  max_tokens: 4096              # Tokens abundantes para respuestas detalladas
+  repetition_penalty: 1.2       # Penalización fuerte de repetición
+  presence_penalty: 0.15        # Penalización alta de presencia
+  frequency_penalty: 0.15       # Penalización alta de frecuencia
+  
+# Optimizaciones de rendimiento (aprovecha hardware potente)
+performance:
+  enable_caching: true          # Cache inteligente con limpieza automática
+  cache_ttl: 21600             # Cache válido 6 horas (modelos cambian más)
+  retry_attempts: 5            # Reintentos abundantes
+  retry_delay: 2               # Delay mínimo (hardware rápido)
+  memory_optimization: false    # Sin limitaciones de memoria
+  parallel_processing: true     # Procesamiento paralelo completo
+  gpu_acceleration: true       # Aprovechar aceleración GPU
+  multi_threading: true        # Multi-hilo agresivo
+  
+# Arquitecturas compatibles (orden de preferencia por calidad)
+compatible_architectures:
+  - "llama3.1"                 # Líder en calidad para tamaños grandes
+  - "qwen2.5"                  # Excelente para traducción técnica
+  - "codellama"               # Especializado en contenido técnico
+  - "mixtral"                 # Mixture of Experts para versatilidad
+  - "phi-3.5"                 # Sorprendente calidad en versiones grandes
+  
+# Límites de seguridad (generosos para hardware potente)
+safety_limits:
+  max_memory_usage: "32GB"     # Límite alto de memoria
+  max_gpu_memory: "24GB"       # Para GPUs profesionales
+  max_processing_time: 1800    # 30 minutos para archivos muy grandes
+  
+# Configuración avanzada (características premium)
+advanced:
+  dynamic_batching: true       # Ajuste dinámico inteligente
+  load_balancing: true        # Balance de carga multi-GPU si disponible
+  quality_monitoring: true    # Monitoreo exhaustivo de calidad
+  adaptive_sampling: true     # Sampling adaptativo según contexto
+  context_optimization: true  # Optimización de contexto para coherencia
+  semantic_chunking: true     # División semántica inteligente
+  
+# Configuración de calidad premium
+quality_settings:
+  enable_review_pass: true    # Pase adicional de revisión
+  consistency_check: true     # Verificación de consistencia terminológica
+  context_preservation: true  # Preservación máxima de contexto
+  technical_term_priority: true # Prioridad a términos técnicos DCS

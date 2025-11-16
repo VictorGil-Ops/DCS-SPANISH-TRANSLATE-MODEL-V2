@@ -1,0 +1,52 @@
+# PRESET LIGERO - EQUIPOS BÁSICOS
+# Optimizado para: 4-8GB RAM, iGPU/GPU básica, CPU básico
+# Modelos recomendados: Llama-3.2-3B-Instruct, gemma-2-2b-it
+
+name: "Ligero - Equipos Básicos"
+description: "Configuración para modelos pequeños (2B-3B parámetros). Solo Llama y Gemma instruct."
+weight: "ligero"
+hardware_profile: "básico"
+supported_models:
+  llama: "Llama-3.2-3B-Instruct"
+  gemma: "gemma-2-2b-it"
+
+# Configuración de procesamiento
+batch_size: 6                    # Lotes más grandes para modelos pequeños (2B-3B)
+timeout: 120                     # Timeout rápido para modelos pequeños
+max_concurrent_requests: 2       # Múltiples peticiones para mejor throughput
+context_window: 2048            # Ventana de contexto reducida
+
+# Configuración LM optimizada para modelos pequeños instruct
+lm_compat: "completions"
+config: "1-instruct-ligero.yaml"  # Prompt optimizado para Llama/Gemma pequeños
+
+# Parámetros del modelo
+lm_api_config:
+  temperature: 0.1              # Temperatura baja para mayor consistencia
+  top_p: 0.85                   # Sampling conservador
+  top_k: 30                     # Reducido para evitar tokens irrelevantes
+  max_tokens: 1024              # Tokens limitados para velocidad
+  repetition_penalty: 1.1       # Penalización ligera de repetición
+  presence_penalty: 0.05        # Penalización mínima de presencia
+  frequency_penalty: 0.05       # Penalización mínima de frecuencia
+  
+# Optimizaciones de rendimiento
+performance:
+  enable_caching: true          # Cache agresivo para reuso
+  cache_ttl: 86400             # Cache válido 24 horas
+  retry_attempts: 2            # Pocos reintentos para evitar bloqueos
+  retry_delay: 5               # Delay entre reintentos
+  memory_optimization: true     # Optimizaciones de memoria
+  
+# Arquitecturas compatibles (orden de preferencia)
+compatible_architectures:
+  - "qwen2.5"                  # Muy eficiente en equipos básicos
+  - "phi-3"                    # Optimizado para edge computing
+  - "llama3.2"                 # Versiones pequeñas de Llama
+  - "gemma2"                   # Modelos compactos de Google
+  
+# Límites de seguridad
+safety_limits:
+  max_memory_usage: "4GB"      # Límite de memoria
+  max_gpu_memory: "2GB"        # Límite GPU si disponible
+  max_processing_time: 300     # 5 minutos máximo por archivo

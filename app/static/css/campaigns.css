@@ -1,0 +1,463 @@
+/* ===================================
+   CSS ESPECÍFICO PARA GESTIÓN DE CAMPAÑAS
+   =================================== */
+
+/* Header principal */
+.campaigns-header {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    backdrop-filter: blur(10px);
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid #475569 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.campaigns-header h2 {
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.campaigns-filters {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #475569 !important;
+}
+
+/* Cards de campañas */
+.campaign-card {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid #475569 !important;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.3s ease;
+}
+
+.campaign-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.campaign-header {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    border-bottom: 1px solid #475569;
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%) !important;
+    border-radius: 12px 12px 0 0;
+}
+
+.campaign-header:hover {
+    background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%) !important;
+}
+
+.campaign-info {
+    flex: 1;
+}
+
+.campaign-name {
+    margin: 0 0 0.5rem 0;
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.campaign-stats {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.campaign-stats .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.campaign-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.expand-icon {
+    transition: transform 0.3s ease;
+    color: #94a3b8;
+}
+
+.campaign-card.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Contenido de misiones */
+.campaign-content {
+    padding: 0;
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    border-radius: 0 0 12px 12px;
+}
+
+.missions-table {
+    width: 100%;
+    margin: 0;
+}
+
+.missions-table th {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    color: #f1f5f9;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    border-bottom: 1px solid #475569;
+}
+
+.missions-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    font-size: 0.875rem;
+    vertical-align: middle;
+    color: #e2e8f0;
+    background: transparent;
+}
+
+.missions-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Estados de misiones */
+.mission-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.status-ready {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-partial {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-missing {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-deployed {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-packaged {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.status-backup-only {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Acciones de misiones */
+.mission-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.mission-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+}
+
+/* Iconos de estado */
+.status-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    color: white;
+    margin-right: 0.5rem;
+}
+
+.status-icon.success {
+    background: #16a34a;
+}
+
+.status-icon.warning {
+    background: #ea580c;
+}
+
+.status-icon.error {
+    background: #dc2626;
+}
+
+.status-icon.info {
+    background: #0284c7;
+}
+
+/* Estado vacío */
+.empty-state {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 12px;
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #94a3b8;
+}
+
+.empty-state i {
+    opacity: 0.7;
+    color: #64748b;
+}
+
+/* Modal de cache */
+.cache-stats .stat-card {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #475569 !important;
+}
+
+.cache-stats .stat-card h6 {
+    margin: 0 0 0.5rem 0;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.cache-stats .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.cache-entry {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    border: 1px solid #475569 !important;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.cache-entry-key {
+    color: #a78bfa;
+    font-weight: 600;
+    word-break: break-all;
+}
+
+.cache-entry-value {
+    color: #34d399;
+    margin-top: 0.25rem;
+    word-break: break-all;
+}
+
+/* Spinner de carga */
+.loading-spinner {
+    color: #94a3b8;
+}
+
+.loading-spinner .fa-spinner {
+    margin-right: 0.5rem;
+}
+
+/* Badges responsivos */
+@media (max-width: 768px) {
+    .campaign-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .campaigns-filters .row > .col-md-6 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .missions-table {
+        font-size: 0.75rem;
+    }
+    
+    .missions-table th,
+    .missions-table td {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.campaign-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Scrollbar personalizada para modales */
+#cacheEntries::-webkit-scrollbar {
+    width: 8px;
+}
+
+#cacheEntries::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+#cacheEntries::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 4px;
+}
+
+#cacheEntries::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Estados de verificación de hash */
+.hash-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.hash-verified {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.hash-mismatch {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.hash-unknown {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Botones de acción específicos */
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+}
+
+.btn-redeploy {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+}
+
+.btn-redeploy:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #93c5fd;
+}
+
+/* Asegurar que los badges usen colores del tema moderno */
+.badge.bg-primary {
+    background: rgba(59, 130, 246, 0.8) !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-success {
+    background: rgba(34, 197, 94, 0.8) !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-secondary {
+    background: rgba(107, 114, 128, 0.8) !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-warning {
+    background: rgba(245, 158, 11, 0.8) !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-info {
+    background: rgba(6, 182, 212, 0.8) !important;
+    color: #ffffff !important;
+}
+
+/* Asegurar consistencia en inputs */
+.form-control {
+    background: rgba(30, 41, 59, 0.6) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+.form-control:focus {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+    color: #f1f5f9 !important;
+}
+
+.form-control::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Scrollbar personalizada para el tema oscuro */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+}

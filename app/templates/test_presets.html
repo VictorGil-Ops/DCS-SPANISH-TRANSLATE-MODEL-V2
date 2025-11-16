@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Presets YAML</title>
+</head>
+<body>
+    <h1>Test de Presets YAML</h1>
+    <p>Servidor funcionando: <span id="status">Verificando...</span></p>
+    <p>Presets encontrados: <span id="count">0</span></p>
+    
+    <h2>Lista de Presets:</h2>
+    <ul id="presetsList"></ul>
+    
+    <script>
+        // Test del endpoint de presets
+        fetch('/api/presets')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('status').textContent = 'OK';
+                document.getElementById('count').textContent = data.total || 0;
+                
+                const list = document.getElementById('presetsList');
+                list.innerHTML = '';
+                
+                if (data.presets) {
+                    data.presets.forEach(preset => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${preset.name}</strong> (${preset.type}) - ${preset.description || 'Sin descripción'}`;
+                        list.appendChild(li);
+                    });
+                }
+            })
+            .catch(error => {
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>

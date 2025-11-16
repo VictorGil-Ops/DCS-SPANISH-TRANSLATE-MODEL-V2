@@ -1,0 +1,3 @@
+# Este archivo mantiene la carpeta run/ en el repositorio Git
+# La carpeta run/ contiene archivos críticos del sistema como VERSION
+# NO ELIMINAR este archivo ni el contenido de la carpeta run/

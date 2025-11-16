@@ -1,0 +1,67 @@
+/* CSS para la sección de progreso de misión mejorada */
+
+/* Estilo para la sección de progreso de misión */
+#currentMissionProgressSection {
+    display: block !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+    backdrop-filter: blur(10px);
+}
+
+/* Estilo para el título de la sección */
+#currentMissionProgressSection .progress-title {
+    color: #60a5fa;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Asegura que los elementos internos sean visibles */
+#currentMissionProgressSection .progress-label,
+#currentMissionProgressSection .current-progress-bar,
+#currentMissionProgressSection .batch-details {
+    display: block !important;
+    opacity: 1 !important;
+}
+
+/* Estilo mejorado para la barra de progreso */
+#missionProgressFill {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa) !important;
+    min-width: 2% !important;
+    transition: width 0.3s ease !important;
+    border-radius: 4px;
+}
+
+/* Estilo para cuando la barra está completada */
+#missionProgressFill.completed {
+    background: linear-gradient(90deg, #10b981, #34d399) !important;
+}
+
+/* Resalta los contadores */
+#batchesProgressCounter {
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem;
+}
+
+#cacheHits,
+#modelCalls {
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+}
+
+/* Estilo para los iconos de cache y modelo */
+.batch-details .fas.fa-bolt {
+    color: #f59e0b;
+}
+
+.batch-details .fas.fa-robot {
+    color: #3b82f6;
+}
+
+/* Animación suave para cambios */
+#currentMissionProgressSection * {
+    transition: all 0.2s ease;
+}

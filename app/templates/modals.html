@@ -1,0 +1,79 @@
+<!-- Modales de la aplicación -->
+
+<!-- Modal principal LM Studio -->
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <header><strong id="helpTitle">Ayuda rápida</strong></header>
+    <div class="content">
+      <h3>LM Studio — Descarga e instalación</h3>
+      <ol>
+        <li>Descarga LM Studio desde <a href="https://lmstudio.ai" target="_blank" rel="noopener">lmstudio.ai</a>.</li>
+        <li>Instálalo y ábrelo. En la pestaña de modelos, descarga uno "Instruct".</li>
+        <li>Activa la API local: menú "Developer" → "Enable Local Server".</li>
+        <li>Comprueba la URL (por defecto): <code>http://localhost:1234/v1</code>.</li>
+        <li>Carga el modelo (desde LM Studio o vía CLI si lo tienes): aparecerá en "Escanear LM Studio".</li>
+      </ol>
+
+      <h3>Configuración recomendada</h3>
+      <ul>
+        <li><b>--lm-compat</b>: <code>completions</code> (típico en LM Studio).</li>
+        <li><b>--config</b>: elige un YAML de <code>./PROMTS</code> con tus reglas de traducción.</li>
+        <li><b>--lm-model</b>: selecciona uno de la lista detectada.</li>
+        <li><b>--timeout</b>: aumenta si el modelo es lento.</li>
+      </ul>
+
+      <h3>Notas</h3>
+      <ul>
+        <li>Si <b>DEPLOY_OVERWRITE</b> está en <code>false</code>, el deploy va a <code>Translated_ES/</code> sin tocar originales.</li>
+        <li>Las misiones <b>✅ Deploy</b> ya están empaquetadas en <code>finalizado/</code>. Las <b>✨ Traducida</b> tienen solo el <code>.translated.lua</code>.</li>
+      </ul>
+    </div>
+    <footer><button id="closeHelp">Cerrar</button></footer>
+  </div>
+</div>
+
+<!-- Modal reutilizable para mini-ayudas -->
+<div id="miniModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="miniTitle">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <header><strong id="miniTitle">Ayuda</strong></header>
+    <div class="content" id="miniContent"></div>
+    <footer><button id="miniClose">Cerrar</button></footer>
+  </div>
+</div>
+
+<!-- Modal de configuración avanzada -->
+<div id="advancedModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="advancedTitle">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <header><strong id="advancedTitle">Configuración Avanzada</strong></header>
+    <div class="content">
+      <div class="row">
+        <div>
+          <label>Reintentos en caso de error</label>
+          <input type="number" id="retryLimit" value="3" min="0" max="10" />
+        </div>
+        <div>
+          <label>Tiempo entre reintentos (ms)</label>
+          <input type="number" id="retryDelay" value="1000" min="100" max="10000" />
+        </div>
+      </div>
+      
+      <div class="row">
+        <div>
+          <label>Modo debug</label>
+          <input type="checkbox" id="debugMode" />
+        </div>
+        <div>
+          <label>Guardar logs detallados</label>
+          <input type="checkbox" id="verboseLogs" checked />
+        </div>
+      </div>
+    </div>
+    <footer>
+      <button id="saveAdvanced" class="primary">Guardar</button>
+      <button id="closeAdvanced">Cancelar</button>
+    </footer>
+  </div>
+</div>

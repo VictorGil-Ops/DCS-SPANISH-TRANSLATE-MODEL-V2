@@ -4,59 +4,124 @@ Traductor de misiones DCS al español utilizando un modelo (IA) local y LM Studi
 
 Versiones:
 
-v250921-2 (latest)
+2.0 (latest)
 
 </br>
 
 ## DCS Orquestador Traductor (Web)
 
-### ¿Cómo se ejecuta?
+### 🚀 ¿Cómo se ejecuta?
 
-- Opción fácil (recomendada):
+#### **🎯 Opción 1: Lanzador Directo (MÁS FÁCIL)**
+- Doble clic en `Traductor - DCS.bat` (directorio raíz)
+- **Ideal para:** Usuario final sin conocimientos técnicos
+- **Ventajas:** 
+  - ✅ Incluido en el repositorio, funciona inmediatamente
+  - ✅ **Genera siempre** el acceso directo `Traductor - DCS.lnk` con icono actualizado
+  - ✅ Obtienes ambas opciones: `.bat` (portable) + `.lnk` (con icono)
 
-CMD `run_orquestador.cmd`.
+#### **🎯 Opción 2: Script CMD Alternativo (FÁCIL)** 
+- Doble clic en `run\run_orquestador.cmd`
+- **Ideal para:** Usuario que prefiere usar la carpeta `run\`
 
-Coloca run_orquestador.cmd en la misma carpeta que `run_orquestador.ps1` y `app.py`.
+#### **🎯 Opción 3: Python Directo (AVANZADO)**
 
-Doble click sobre `run_orquestador.cmd`.
-
-- Segunda opción:
-
-Haz clic derecho `run_orquestador.ps1` → Run with PowerShell (o Ejecutar con PowerShell).
-
-- Tercera opción Opción manual (para usuarios avanzados):
-
-```powershell
-
-# 1) Ve a la carpeta del proyecto
-cd .\ruta\al\proyecto
-
-# 2) (opcional) crear venv e instalar dependencias
-py -3 -m venv .venv
-.\.venv\Scripts\python -m pip install --upgrade pip
-.\.venv\Scripts\python -m pip install flask requests
-
-# 3) Ejecutar la app
-.\.venv\Scripts\python .\app.py
-# Luego abre http://localhost:5000 en tu navegador
-
+```bash
+# Ejecutar directamente el servidor Flask
+python run\run_flask_app.py
 ```
 
-#### El script
+- **Ideal para:** Desarrolladores o usuarios avanzados
 
-Comprueba si tienes Python 3.
+#### **🎯 Opción 4: Script PowerShell (INTERMEDIO)**
+- Clic derecho en `run\run_orquestador.ps1` → "Ejecutar con PowerShell"
+- **Ideal para:** Usuario con PowerShell habilitado
 
-Si no lo detecta, te ofrece instalarlo automáticamente con winget.
+### 🔗 Generación Automática de Acceso Directo
 
-Crea (o reutiliza) un entorno virtual .venv/.
+El acceso directo con icono **se genera automáticamente** cada vez que ejecutes `Traductor - DCS.bat`.
 
-Actualiza pip e instala dependencias (mínimo flask y requests, o todas las de tu requirements.txt si existe).
+Si necesitas crearlo manualmente sin ejecutar la aplicación:
 
-Arranca app.py.
+```powershell
+.\run\create_shortcut.ps1
+```
 
-Abre automaticamente tu navegador predeterminado en <http://localhost:5000> (tarda unos ~40 segundos con todo ya instalado, si no tarda un poco mas)
+> **💡 Tip:** El `.lnk` no se incluye en el repositorio pero se genera dinámicamente con las rutas correctas de tu sistema.
 
-Necesitas LM Studio para traducir con modelos locales (ver sugerencias). Si no hay modelo cargado/servidor activo, la UI te avisará y podrás pulsar “🔄 Escanear LM Studio” para refrescar la lista.
+---
+
+## 📥 Para Usuarios Nuevos (Descarga desde GitHub)
+
+Si acabas de descargar/clonar este repositorio:
+
+### **🚀 ¡PRIMERA VEZ? ¡NO HAY PROBLEMA!**
+
+**¿No tienes Python instalado?**
+1. ✅ **¡YA ESTÁ LISTO!** Doble clic en `Traductor - DCS.bat`
+2. 🔧 **INSTALACIÓN AUTOMÁTICA**: Te preguntará si quieres instalar Python automáticamente
+3. ⏱️ **2-3 minutos**: El sistema descargará e instalará Python por ti
+4. 🎉 **LISTO**: Se generará `Traductor - DCS.lnk` con icono y se abrirá la aplicación
+
+**¿Ya tienes Python?**
+1. **¡YA ESTÁ LISTO!** Doble clic en `Traductor - DCS.bat`
+2. **¡AUTOMÁTICO!** Se genera `Traductor - DCS.lnk` con icono personalizado
+3. **Siempre disponibles:** Ambos archivos para tu comodidad
+
+### **🔧 Instalación Inteligente de Python**
+
+El sistema detectará automáticamente si necesitas Python y:
+
+- 🤖 **Opción A (Recomendada)**: Instalación automática silenciosa
+  - Descarga Python 3.11+ oficial desde python.org
+  - Configura PATH automáticamente  
+  - Instala pip y dependencias
+  - No requiere conocimientos técnicos
+
+- 🌐 **Opción B (Manual)**: Te lleva a python.org para instalación manual
+  - Para usuarios que prefieren control total
+  - Instrucciones claras paso a paso
+
+> **🎉 Ventajas:** 
+> - `Traductor - DCS.bat` funciona **incluso sin Python instalado**
+> - Instalación completamente automatizada de todas las dependencias
+> - Genera automáticamente el acceso directo con icono DCS actualizado  
+> - Sin archivos .lnk en el repositorio (se crean dinámicamente)
+> - **Primera experiencia perfecta**: de descarga a funcionando en 3 minutos
+
+---
+
+## 🔄 Flujo de Ejecución Automático
+
+### **Cada vez que ejecutas `Traductor - DCS.bat`:**
+1. 🔗 **Genera/actualiza** automáticamente `Traductor - DCS.lnk`
+2. ✅ **Asegura** que el acceso directo tiene el icono DCS actualizado
+3. 🚀 **Lanza** la aplicación web
+4. 💡 **Te informa** que también puedes usar el `.lnk` directamente
+
+### **Opciones de lanzamiento disponibles:**
+- 🖱️ **Opción A:** Doble clic en `Traductor - DCS.bat` (genera .lnk + lanza app)
+- 🖱️ **Opción B:** Doble clic en `Traductor - DCS.lnk` (lanza app directamente)
+
+---
+
+### ⚙️ ¿Qué hace el script automáticamente?
+
+- 🔍 **Detecta Python 3** (lo instala automáticamente si no está disponible)
+- 🐍 **Instala Python desde python.org** (descarga oficial, instalación silenciosa)
+- 📦 **Configura pip** automáticamente (gestor de paquetes de Python)
+- 🏠 **Crea entorno virtual** `.venv` automáticamente
+- 📚 **Instala dependencias** desde `run\requirements.txt`
+- 🚀 **Lanza el servidor Flask** en `http://127.0.0.1:5000/orchestrator`
+- 🌐 **Abre el navegador** automáticamente (~90 segundos la primera vez)
+
+**🎯 Experiencia de usuario:**
+
+- **Usuario sin Python**: Instalación automática + configuración completa (~3 minutos)
+- **Usuario con Python**: Configuración directa + apertura inmediata (~90 segundos)
+- **Sin conocimientos técnicos requeridos** para ninguno de los casos
+
+Necesitas LM Studio para traducir con modelos locales (ver sugerencias). Si no hay modelo cargado/servidor activo, la UI te avisará y podrás pulsar "🔄 Escanear LM Studio" para refrescar la lista.
 
 </br>
 </br>

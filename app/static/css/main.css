@@ -1,0 +1,254 @@
+/* DCS Spanish Translator - Estilos principales */
+
+/* Reset y configuración base */
+*, *::before, *::after { 
+    box-sizing: border-box; 
+}
+
+body { 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    max-width: 980px; 
+    margin: 20px auto; 
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Layout */
+.row { 
+    display: flex; 
+    gap: 12px; 
+    flex-wrap: wrap; 
+}
+
+.row > div { 
+    flex: 1; 
+    min-width: 280px; 
+}
+
+.topbar { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 12px; 
+}
+
+/* Formularios */
+fieldset { 
+    margin-bottom: 16px; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+label { 
+    display: block; 
+    font-weight: 600; 
+    margin: 8px 0 4px; 
+}
+
+input[type=text], 
+input[type=number],
+select { 
+    width: 100%; 
+    padding: 8px; 
+    box-sizing: border-box; 
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+input[type=text]:focus,
+input[type=number]:focus,
+select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+button { 
+    padding: 10px 14px; 
+    cursor: pointer; 
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background: #f5f5f5;
+}
+
+button.primary {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+button.primary:hover {
+    background: #2563eb;
+}
+
+/* Componentes específicos */
+.box { 
+    border: 1px solid #ddd; 
+    padding: 10px; 
+    border-radius: 8px; 
+    background: #fff;
+}
+
+.missions { 
+    max-height: 260px; 
+    overflow: auto; 
+    border: 1px solid #ddd; 
+    padding: 8px; 
+    border-radius: 8px; 
+    background: #fafafa; 
+}
+
+.progress { 
+    height: 12px; 
+    background: #eee; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    margin: 6px 0 2px; 
+}
+
+.progress > div { 
+    height: 100%; 
+    background: #3b82f6; 
+    width: 0%; 
+    transition: width 0.2s ease; 
+}
+
+.badge { 
+    display: inline-block; 
+    background: #eee; 
+    border-radius: 6px; 
+    padding: 2px 6px; 
+    margin: 2px 4px 2px 0; 
+    font-size: 12px;
+}
+
+.pill { 
+    display: inline-block; 
+    font-size: 12px; 
+    padding: 2px 6px; 
+    border-radius: 999px; 
+    margin-left: 6px; 
+}
+
+.pill-green { 
+    background: #dcfce7; 
+    color: #166534; 
+    border: 1px solid #86efac; 
+}
+
+.pill-amber { 
+    background: #fef3c7; 
+    color: #92400e; 
+    border: 1px solid #fcd34d; 
+}
+
+.ver-badge { 
+    display: inline-block; 
+    margin-left: 8px; 
+    font-size: 12px; 
+    padding: 2px 8px; 
+    border-radius: 999px; 
+    background: #eef2ff; 
+    color: #3730a3; 
+    border: 1px solid #c7d2fe; 
+    vertical-align: middle; 
+}
+
+/* Estados y utilidades */
+.error { 
+    color: #b91c1c; 
+}
+
+.ok { 
+    color: #166534; 
+}
+
+.muted { 
+    color: #666; 
+    font-size: 12px; 
+}
+
+/* Presets */
+.presetbar { 
+    display: flex; 
+    gap: 8px; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    margin-top: 8px; 
+}
+
+.presetbar input[type=text] { 
+    max-width: 260px; 
+}
+
+/* Help button */
+.help-btn { 
+    margin-left: 6px; 
+    font-weight: 700; 
+    color: #2563eb; 
+    border: 1px solid #2563eb; 
+    background: #fff; 
+    border-radius: 999px; 
+    width: 22px; 
+    height: 22px; 
+    line-height: 20px; 
+    text-align: center; 
+    cursor: pointer; 
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* Código */
+code { 
+    background: #f6f6f6; 
+    padding: 1px 4px; 
+    border-radius: 4px; 
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+}
+
+/* Errores */
+.errbox { 
+    border: 1px solid #f2b8b5; 
+    background: #fff1f0; 
+    padding: 8px; 
+    border-radius: 8px; 
+    max-height: 240px; 
+    overflow: auto; 
+}
+
+.erritem { 
+    margin: 6px 0; 
+    white-space: pre-wrap; 
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; 
+    font-size: 12px; 
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    body {
+        margin: 10px;
+    }
+    
+    .row {
+        flex-direction: column;
+    }
+    
+    .row > div {
+        min-width: auto;
+    }
+    
+    .topbar {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+}

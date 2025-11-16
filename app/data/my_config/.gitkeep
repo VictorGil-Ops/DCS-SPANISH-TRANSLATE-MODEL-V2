@@ -1,0 +1,2 @@
+# Esta carpeta contiene configuraciones de usuario que no deben ser versionadas
+# Este archivo .gitkeep permite que la carpeta exista en Git sin contenido
