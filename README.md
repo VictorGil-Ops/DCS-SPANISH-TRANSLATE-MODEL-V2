@@ -303,15 +303,6 @@ Pulsa “🔄 Escanear LM Studio” para refrescar.
 </br>
 </br>
 
-## EXTRA V1(BETA) - este script se integrará en el futuro en el modelo V2 para poder usar modelos públicos
-
-Si queremos usar un modelo público (deepseek, chatgpt, etc) usar el script dentro de la carpeta `EXTRA V1(BETA)`.
-
-Ten en cuenta que necesitarás una cuenta developer y pagar la suscripción a la API.
-
-</br>
-</br>
-
 ## REQUISITOS
 
 - Requiere Python 3.8+
