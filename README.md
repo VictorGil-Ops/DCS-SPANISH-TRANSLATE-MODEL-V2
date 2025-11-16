@@ -320,31 +320,3 @@ Ten en cuenta que necesitarás una cuenta developer y pagar la suscripción a la
 
 </br>
 </br>
-
-## UPDATES CHANGELOG
-
-- v250921-2 (actualizado el 21/09/2025)
-
-Se añade front para cargar el orquestador con Flask a través del navegador.
-
-Se añade:
-
-- Flask (web)
-- Aviso de actualizaciones
-- cmd
-
-Se arregla problema de carga de los ficheros YML de PROMT/
-
---->
-
-Lista las misiones en dos bloques: primero normales (C1, C2, …) y luego Flaming Cliffs (-FC-).
-
-Pregunta si quieres incluir las -FC-.
-
-Quita el tail en vivo de los logs y muestra un porcentaje global de progreso por misiones seleccionadas.
-
-Mantiene intacto el modo deploy.
-
-Conserva la auto-carga del modelo si el modo es translate o all.
-
-Maneja nombres con espacios tipo C21 .miz.
